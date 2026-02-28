@@ -98,7 +98,6 @@
       display: flex;
       align-items: center;
       padding: 0 28px;
-      gap: 8px;
       z-index: 200;
     }
 
@@ -120,12 +119,18 @@
     }
 
     /* Small "RP" brand mark in the nav */
+    /* Left column: brand + nav-links, always fixed in place */
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-shrink: 0;
+    }
+
     .nav-brand {
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-right: 28px;
-      flex-shrink: 0;
     }
 
     .nav-brand-mark {
@@ -696,18 +701,20 @@
     }
 
     /* ═══════════════════════════════════════════════════════════
-       COMPACT NAV SEARCH — visible only on detail pages
+       CENTER SEARCH — visible only on detail/listing pages
     ═══════════════════════════════════════════════════════════ */
-    .nav-search-wrap {
-      display: none;
+    /* Center column: grows to fill space, centers its content */
+    .nav-center {
       flex: 1;
-      max-width: 500px;
+      display: none;
+      justify-content: center;
       align-items: center;
-      gap: 10px;
+      padding: 0 20px;
+      min-width: 0;
     }
-    body.detail-active .nav-search-wrap { display: flex; }
+    body.detail-active .nav-center { display: flex; }
 
-    .nav-searchbar-wrap { position: relative; flex: 1; }
+    .nav-searchbar-wrap { position: relative; width: 100%; max-width: 480px; }
 
     .nav-searchbar {
       display: flex;
@@ -757,21 +764,6 @@
     }
     .nav-search-input::placeholder { color: var(--text-muted); }
 
-    .nav-back {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 34px;
-      height: 34px;
-      border-radius: 7px;
-      flex-shrink: 0;
-      color: var(--text-secondary);
-      border: 1px solid var(--border-bright);
-      background: var(--bg-base);
-      transition: color 0.12s, border-color 0.12s;
-    }
-    .nav-back:hover { color: var(--cream); }
-
     /* ═══════════════════════════════════════════════════════════
        HAMBURGER BUTTON
     ═══════════════════════════════════════════════════════════ */
@@ -815,6 +807,7 @@
       .nav-brand-label { display: none; }
 
       /* Show hamburger; move nav links into a fixed drawer */
+      .nav-left { gap: 12px; }
       .nav-hamburger { display: flex; }
 
       .nav-links {
@@ -848,8 +841,8 @@
       .patch-tag { display: none; }
       .nav-right { gap: 8px; }
 
-      /* Compact nav search: let it grow to fill available space */
-      .nav-search-wrap { max-width: none; }
+      /* Center search: remove side padding on narrow screens */
+      .nav-center { padding: 0 8px; }
 
       /* ── Landing ────────────────────────────────────────── */
       .landing {
@@ -910,30 +903,33 @@
   ═══════════════════════════════════════════════════════════ -->
   <nav class="topnav" role="navigation" aria-label="Primary">
 
-    <!-- Small RP mark -->
-    <a class="nav-brand" href="#" aria-label="RaiderPortal home">
-      <svg class="nav-brand-mark" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <rect width="26" height="26" rx="5" fill="#0f1013"/>
-        <clipPath id="nm"><rect x="2" y="2" width="22" height="22" rx="3"/></clipPath>
-        <g clip-path="url(#nm)">
-          <polygon points="2,2 10,2 2,10" fill="#00e5ff" opacity="0.9"/>
-          <polygon points="10,2 18,2 2,18 2,10" fill="#ffcc00" opacity="0.85"/>
-          <polygon points="18,2 24,2 24,9 9,24 2,24 2,18" fill="#ff5600" opacity="0.9"/>
-          <polygon points="24,9 24,24 9,24" fill="#d0002a" opacity="0.85"/>
-        </g>
-        <rect x="2" y="2" width="22" height="22" rx="3" fill="none" stroke="rgba(236,226,208,0.12)" stroke-width="1"/>
-      </svg>
-      <span class="nav-brand-label">RaiderPortal</span>
-    </a>
-
-    <!-- Compact search — visible only on detail pages (body.detail-active) -->
-    <div class="nav-search-wrap" id="navSearchWrap">
-      <a class="nav-back" href="#" aria-label="Back to search" title="Back to search">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M19 12H5M12 5l-7 7 7 7"/>
+    <!-- Left column: brand + nav links — identical on every page -->
+    <div class="nav-left">
+      <a class="nav-brand" href="#" aria-label="RaiderPortal home">
+        <svg class="nav-brand-mark" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect width="26" height="26" rx="5" fill="#0f1013"/>
+          <clipPath id="nm"><rect x="2" y="2" width="22" height="22" rx="3"/></clipPath>
+          <g clip-path="url(#nm)">
+            <polygon points="2,2 10,2 2,10" fill="#00e5ff" opacity="0.9"/>
+            <polygon points="10,2 18,2 2,18 2,10" fill="#ffcc00" opacity="0.85"/>
+            <polygon points="18,2 24,2 24,9 9,24 2,24 2,18" fill="#ff5600" opacity="0.9"/>
+            <polygon points="24,9 24,24 9,24" fill="#d0002a" opacity="0.85"/>
+          </g>
+          <rect x="2" y="2" width="22" height="22" rx="3" fill="none" stroke="rgba(236,226,208,0.12)" stroke-width="1"/>
         </svg>
+        <span class="nav-brand-label">RaiderPortal</span>
       </a>
+      <div class="nav-links">
+        <a class="nav-link" href="#/items">Items</a>
+        <a class="nav-link" href="#/quests">Quests</a>
+        <a class="nav-link" href="#/arc">ARC</a>
+        <a class="nav-link" href="#/traders">Traders</a>
+        <a class="nav-link" href="#/events">Events</a>
+      </div>
+    </div>
+
+    <!-- Center column: search bar, shown only on sub-pages, centered in header -->
+    <div class="nav-center">
       <div class="nav-searchbar-wrap" id="navSearchBarWrap">
         <div class="nav-searchbar" id="navSearchBar">
           <select id="navSearchCategory" class="nav-search-cat" aria-label="Search category">
@@ -951,14 +947,7 @@
       </div>
     </div>
 
-    <div class="nav-links">
-      <a class="nav-link" href="#/items">Items</a>
-      <a class="nav-link" href="#/quests">Quests</a>
-      <a class="nav-link" href="#/arc">ARC</a>
-      <a class="nav-link" href="#/traders">Traders</a>
-      <a class="nav-link" href="#/events">Events</a>
-    </div>
-
+    <!-- Right column: patch tag, sign-in, hamburger -->
     <div class="nav-right">
       <span class="patch-tag">Patch 1.4.2</span>
       <button class="btn-signin" type="button">Sign In</button>
