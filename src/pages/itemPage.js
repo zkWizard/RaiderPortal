@@ -153,6 +153,16 @@ function getItemSubClass(item) {
   return ''; // weapons and unknown types use default orange accent
 }
 
+// ─── Map data ─────────────────────────────────────────────────
+
+const MAP_DATA = [
+  { id: 'dam',           label: 'Dam',           grad: 'linear-gradient(135deg,#1a2e3a 0%,#2a4a5a 100%)' },
+  { id: 'spaceport',     label: 'Spaceport',     grad: 'linear-gradient(135deg,#1e1432 0%,#2e2050 100%)' },
+  { id: 'buried-city',   label: 'Buried City',   grad: 'linear-gradient(135deg,#2e1e0e 0%,#4a321a 100%)' },
+  { id: 'blue-gate',     label: 'Blue Gate',     grad: 'linear-gradient(135deg,#0e1e34 0%,#163060 100%)' },
+  { id: 'stella-montis', label: 'Stella Montis', grad: 'linear-gradient(135deg,#142820 0%,#1e4030 100%)' },
+];
+
 // ─── Section builders ──────────────────────────────────────────
 
 function buildIconHtml(item) {
@@ -248,6 +258,52 @@ function buildGuideLinks(links) {
     </div>`;
 }
 
+function buildLocationsSection(item) {
+  // Build a map-keyed index from item.locations (always [] currently — future-proofed)
+  const byMap = new Map();
+  if (Array.isArray(item.locations)) {
+    for (const loc of item.locations) {
+      const key = (loc.map ?? '').toLowerCase().replace(/\s+/g, '-');
+      if (!byMap.has(key)) byMap.set(key, []);
+      byMap.get(key).push(loc);
+    }
+  }
+
+  const pills = [
+    `<button class="loc-pill active" data-map="all">All Maps</button>`,
+    ...MAP_DATA.map((m) =>
+      `<button class="loc-pill" data-map="${m.id}">${esc(m.label)}</button>`),
+  ].join('');
+
+  const cards = MAP_DATA.map((m) => {
+    const locs = byMap.get(m.id) ?? [];
+    let bodyHtml;
+    if (locs.length) {
+      bodyHtml = locs.map((loc) => `
+        <div class="loc-spawn">
+          ${loc.area  ? `<span class="tag tag-gray">${esc(loc.area)}</span>`  : ''}
+          ${loc.notes ? `<span class="loc-notes">${esc(loc.notes)}</span>` : ''}
+        </div>`).join('');
+    } else {
+      bodyHtml = `<div class="loc-empty">No location data yet</div>`;
+    }
+    return `
+      <div class="loc-map-card" data-map="${m.id}">
+        <div class="loc-map-header" style="background:${m.grad}">
+          <span class="loc-map-name">${esc(m.label)}</span>
+        </div>
+        <div class="loc-map-body">${bodyHtml}</div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="detail-section locations-section">
+      <div class="section-title">Locations</div>
+      <div class="loc-filter-bar">${pills}</div>
+      <div class="loc-maps-grid">${cards}</div>
+    </div>`;
+}
+
 function buildSidebar(item, soldBy) {
   const rc = rarityClass(item.rarity);
 
@@ -317,6 +373,8 @@ function buildBody(item, soldBy) {
 
     buildLootAreas(item.loot_area),
 
+    buildLocationsSection(item),
+
     buildGuideLinks(item.guide_links),
   ].filter(Boolean).join('');
 
@@ -333,6 +391,23 @@ function buildItemContent(item, soldBy) {
   return `
     ${buildHero(item)}
     ${buildBody(item, soldBy)}`;
+}
+
+// ─── Location filter wiring ────────────────────────────────────
+// Uses event delegation on the container so it covers all tier panels.
+
+function wireLocations(container) {
+  container.addEventListener('click', (e) => {
+    const pill = e.target.closest('.loc-pill');
+    if (!pill) return;
+    const section = pill.closest('.locations-section');
+    if (!section) return;
+    const mapId = pill.dataset.map;
+    for (const p of section.querySelectorAll('.loc-pill'))
+      p.classList.toggle('active', p.dataset.map === mapId);
+    for (const card of section.querySelectorAll('.loc-map-card'))
+      card.style.display = (mapId === 'all' || card.dataset.map === mapId) ? '' : 'none';
+  });
 }
 
 // ─── Main export ───────────────────────────────────────────────
@@ -395,6 +470,7 @@ export async function renderItemGroup(slug, container) {
         </div>
         ${buildBody(item, soldBy)}
       </div>`;
+    wireLocations(container);
     return;
   }
 
@@ -442,4 +518,6 @@ export async function renderItemGroup(slug, container) {
       allPanels.forEach((p, j) => { p.hidden = j !== idx; });
     });
   });
+
+  wireLocations(container);
 }

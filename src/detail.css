@@ -1530,3 +1530,109 @@ body.no-transition .detail-view  { transition: none !important; }
 .trader-avatar--lance   { background: linear-gradient(135deg, #d0002a 0%, #ff6b6b 100%); }
 .trader-avatar--shani   { background: linear-gradient(135deg, #00845a 0%, #00e5a0 100%); }
 .trader-avatar--tianwen { background: linear-gradient(135deg, #7c3aed 0%, #c084fc 100%); }
+
+/* ═══════════════════════════════════════════════════════════════════
+   LOCATIONS SECTION
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Filter pills */
+.loc-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.loc-pill {
+  padding: 4px 13px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border: 1px solid var(--border-bright);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+
+.loc-pill:hover {
+  background: var(--bg-elevated);
+  color: var(--cream);
+}
+
+.loc-pill.active {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: #fff;
+}
+
+/* Map card grid */
+.loc-maps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.loc-map-card {
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--bg-card);
+  transition: border-color 0.15s;
+}
+
+.loc-map-card:hover { border-color: var(--border-bright); }
+
+.loc-map-header {
+  padding: 14px 16px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 58px;
+}
+
+.loc-map-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.92);
+  letter-spacing: 0.03em;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+}
+
+.loc-map-body {
+  padding: 12px 16px 14px;
+  min-height: 52px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.loc-empty {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.loc-spawn {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.loc-notes {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .loc-maps-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 560px) {
+  .loc-maps-grid { grid-template-columns: 1fr; }
+  .loc-filter-bar { gap: 5px; }
+  .loc-pill { font-size: 10px; padding: 3px 10px; }
+}
