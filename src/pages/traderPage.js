@@ -86,10 +86,7 @@ export async function renderTrader(id, container) {
   for (const [category, items] of groups) {
     const rows = items.map((item) => {
       const rc      = rarityClass(item.rarity);
-      const isBp = item.item_type === 'Blueprint' || item.item_type === 'Recipe';
-      const iconUrl = isBp
-        ? `https://cdn.metaforge.app/arc-raiders/icons/${item.id}.webp`
-        : item.icon;
+      const iconUrl = item.icon;
       const iconHtml = iconUrl
         ? `<img class="er-icon" src="${esc(iconUrl)}" alt="" loading="lazy"
                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">

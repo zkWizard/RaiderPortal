@@ -42,10 +42,7 @@ function buildItemList(entries) {
     if (!item) return '';
     const rc  = rarityClass(item.rarity);
     const qty = quantity ? `<span class="er-qty">× ${esc(String(quantity))}</span>` : '';
-    const isBp = item.item_type === 'Blueprint' || item.item_type === 'Recipe';
-    const iconUrl = isBp
-      ? `https://cdn.metaforge.app/arc-raiders/icons/${item.id}.webp`
-      : item.icon;
+    const iconUrl = item.icon;
     const iconHtml = iconUrl
       ? `<img class="er-icon" src="${esc(iconUrl)}" alt="" loading="lazy"
               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">

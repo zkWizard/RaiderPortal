@@ -131,13 +131,7 @@ function normalizeItems(items) {
   return items.map((item) => {
     const baseName = normalizeBaseName(item.name);
     const baseSlug = nameToSlug(baseName);
-    // Blueprint/Recipe items: the API inconsistently returns the base item icon
-    // for some entries. Always derive the icon from the item's own ID so every
-    // blueprint uses its own CDN asset (e.g. anvil-recipe.webp, not anvil.webp).
-    const isBp = item.item_type === 'Blueprint' || item.item_type === 'Recipe';
-    const icon = isBp
-      ? normalizeIcon(`/arc-raiders/icons/${item.id}.webp`)
-      : normalizeIcon(item.icon);
+    const icon = normalizeIcon(item.icon);
     return {
       id:       item.id,
       name:     item.name,

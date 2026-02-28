@@ -156,13 +156,7 @@ function getItemSubClass(item) {
 // ─── Section builders ──────────────────────────────────────────
 
 function buildIconHtml(item) {
-  // Blueprint/Recipe items: the API inconsistently returns the base item icon
-  // for some entries. Always derive the URL from the item's own ID so every
-  // blueprint uses its own CDN asset (e.g. anvil-recipe.webp, not anvil.webp).
-  const isBp = item.item_type === 'Blueprint' || item.item_type === 'Recipe';
-  const iconUrl = isBp
-    ? `https://cdn.metaforge.app/arc-raiders/icons/${item.id}.webp`
-    : item.icon;
+  const iconUrl = item.icon;
   if (iconUrl) {
     return `
       <div class="hero-icon-wrap">
