@@ -34,26 +34,31 @@ function rarityClass(rarity) {
 // Only keys listed here are shown; zero / empty / null values are skipped.
 
 const STAT_LABELS = {
+  // ── Weapon primaries ──────────────────────────────────────
+  ammo:                          'Ammo Type',
+  firingMode:                    'Firing Mode',
   damage:                        'Damage',
+  range:                         'Range',
+  magazineSize:                  'Magazine Size',
+  fireRate:                      'Fire Rate',
+  stability:                     'Stability',
+  agility:                       'Agility',
+  stealth:                       'Stealth',
+  // ── General ───────────────────────────────────────────────
   health:                        'Health',
   shield:                        'Shield',
   radius:                        'Radius (m)',
   weight:                        'Weight',
-  agility:                       'Agility',
   arcStun:                       'ARC Stun',
   healing:                       'Healing',
   stamina:                       'Stamina',
-  stealth:                       'Stealth',
   useTime:                       'Use Time (s)',
   duration:                      'Duration (s)',
-  fireRate:                      'Fire Rate',
-  stability:                     'Stability',
   stackSize:                     'Stack Size',
   raiderStun:                    'Raider Stun',
   weightLimit:                   'Weight Limit',
   augmentSlots:                  'Augment Slots',
   healingSlots:                  'Healing Slots',
-  magazineSize:                  'Magazine Size',
   reducedNoise:                  'Reduced Noise',
   shieldCharge:                  'Shield Charge',
   backpackSlots:                 'Backpack Slots',
@@ -164,6 +169,39 @@ function buildGuideLinks(links) {
     </div>`;
 }
 
+// ─── Tier navigation ──────────────────────────────────────
+// Detects items named "{Base} I/II/III/IV" and renders a nav strip
+// linking to the other tiers. Returns '' for non-tiered items.
+
+const TIER_RE = /^(.+?)\s+(I{1,3}|IV)$/;
+const TIER_LABELS = ['I', 'II', 'III', 'IV'];
+
+function buildTierNav(currentItem, allItems) {
+  const match = currentItem.name.match(TIER_RE);
+  if (!match) return '';
+
+  const baseName = match[1];
+  const tiers = TIER_LABELS
+    .map((t) => allItems.find((i) => i.name === `${baseName} ${t}`))
+    .filter(Boolean);
+
+  if (tiers.length < 2) return '';
+
+  const links = tiers.map((t) => {
+    if (t.id === currentItem.id) {
+      return `<span class="tier-current">${esc(match[2])}</span>`;
+    }
+    const tierLabel = t.name.match(TIER_RE)?.[2] ?? t.name;
+    return `<a class="tier-link" href="#/item/${encodeURIComponent(t.id)}">${esc(tierLabel)}</a>`;
+  }).join('');
+
+  return `
+    <div class="detail-section">
+      <div class="section-title">Tier Variants — ${esc(baseName)}</div>
+      <div class="tier-nav">${links}</div>
+    </div>`;
+}
+
 function buildSidebar(item, soldBy) {
   const rc = rarityClass(item.rarity);
 
@@ -244,6 +282,8 @@ export async function renderItem(id, container) {
     </nav>`;
 
   const mainContent = [
+    buildTierNav(item, items),
+
     item.description ? `
       <div class="detail-section">
         <div class="section-title">Description</div>

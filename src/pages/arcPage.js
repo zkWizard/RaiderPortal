@@ -7,7 +7,7 @@
  * This gives a general list of ARC-enemy drops shared across all ARC types.
  */
 
-import { fetchArcs, fetchItems } from '../services/metaforgeApi.js';
+import { fetchArcs } from '../services/metaforgeApi.js';
 
 // ─── Utilities ────────────────────────────────────────────────
 
@@ -25,22 +25,16 @@ function rarityClass(rarity) {
   return 'rarity-' + (rarity ?? 'common').toLowerCase().replace(/\s+/g, '-');
 }
 
-// ─── Loot table from item cross-reference ─────────────────────
+// ─── Loot table from arc.loot (requires includeLoot=true fetch) ─────────────
 
-function buildLootTable(allItems) {
-  // Items whose loot_area string contains the token "ARC" (comma-separated)
-  const arcDrops = allItems.filter((item) => {
-    if (!item.loot_area) return false;
-    const areas = item.loot_area.split(',').map((s) => s.trim().toLowerCase());
-    return areas.includes('arc');
-  });
-
-  if (!arcDrops.length) {
-    return `<p class="empty-note">Loot data not yet available for this ARC type.</p>`;
+function buildLootTable(loot) {
+  if (!loot?.length) {
+    return `<p class="empty-note">No loot data available for this ARC.</p>`;
   }
 
-  const rows = arcDrops.map((item) => {
-    const rc      = rarityClass(item.rarity);
+  const rows = loot.map(({ item }) => {
+    if (!item) return '';
+    const rc       = rarityClass(item.rarity);
     const iconHtml = item.icon
       ? `<img class="er-icon" src="${esc(item.icon)}" alt="" loading="lazy"
               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
@@ -58,7 +52,7 @@ function buildLootTable(allItems) {
           </div>
         </div>
       </div>`;
-  }).join('');
+  }).filter(Boolean).join('');
 
   return `<div class="entity-list">${rows}</div>`;
 }
@@ -66,10 +60,7 @@ function buildLootTable(allItems) {
 // ─── Main export ──────────────────────────────────────────────
 
 export async function renderArc(id, container) {
-  const [arcs, allItems] = await Promise.all([
-    fetchArcs(),
-    fetchItems().catch(() => []),
-  ]);
+  const arcs = await fetchArcs();
 
   const arc = arcs.find((a) => a.id === id);
   if (!arc) {
@@ -117,15 +108,10 @@ export async function renderArc(id, container) {
       <p class="detail-description">${esc(arc.description)}</p>
     </div>` : '';
 
-  // Loot note: the API provides general ARC drops, not per-type loot tables
   const lootSection = `
     <div class="detail-section">
-      <div class="section-title">ARC Enemy Drops</div>
-      <p class="empty-note" style="margin-bottom:12px;">
-        The API provides a shared loot pool for all ARC enemies.
-        Per-type drop tables are not currently available.
-      </p>
-      ${buildLootTable(allItems)}
+      <div class="section-title">Drops</div>
+      ${buildLootTable(arc.loot)}
     </div>`;
 
   container.innerHTML = `

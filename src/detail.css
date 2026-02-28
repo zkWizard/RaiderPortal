@@ -125,10 +125,11 @@
   border: 1px solid transparent;
 }
 
+/* blue=Item, orange=ARC, green=Quest, purple=Trader — matches search dropdown badges */
 .hero-badge.item   { color: var(--cyan);  background: rgba(0,229,255,0.08); border-color: rgba(0,229,255,0.20); }
 .hero-badge.arc    { color: var(--orange); background: rgba(255,86,0,0.08);  border-color: rgba(255,86,0,0.22); }
-.hero-badge.quest  { color: var(--yellow); background: rgba(255,204,0,0.08); border-color: rgba(255,204,0,0.20); }
-.hero-badge.trader { color: #00b87a;       background: rgba(0,184,122,0.08); border-color: rgba(0,184,122,0.20); }
+.hero-badge.quest  { color: #00b87a;       background: rgba(0,184,122,0.08); border-color: rgba(0,184,122,0.22); }
+.hero-badge.trader { color: #a855f7;       background: rgba(168,85,247,0.08); border-color: rgba(168,85,247,0.22); }
 
 /* Rarity inline text colour */
 .rarity-common    { color: #9d9d9d; }
@@ -503,6 +504,44 @@
 }
 
 .crafted-at-label { color: var(--text-muted); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* ── Tier variant navigation (items) ────────────────────── */
+.tier-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tier-link,
+.tier-current {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  padding: 5px 12px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border: 1px solid var(--border-bright);
+  background: var(--bg-base);
+  color: var(--text-secondary);
+  transition: background 0.1s, border-color 0.1s, color 0.1s;
+}
+
+.tier-link:hover {
+  background: rgba(255,86,0,0.08);
+  border-color: rgba(255,86,0,0.4);
+  color: var(--orange);
+}
+
+.tier-current {
+  background: rgba(255,86,0,0.12);
+  border-color: rgba(255,86,0,0.5);
+  color: var(--orange);
+  cursor: default;
+}
 
 /* ── Empty state ─────────────────────────────────────────── */
 .empty-note {
