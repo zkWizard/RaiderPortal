@@ -887,3 +887,114 @@ body.no-transition .detail-view  { transition: none !important; }
 .page-arc  .er-name a:hover,
 .page-quest .er-name a:hover,
 .page-trader .er-name a:hover { color: var(--page-accent, var(--orange)); }
+
+/* ═══════════════════════════════════════════════════════════════════
+   RESPONSIVE — 768px
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .detail-container {
+    padding: 24px 16px 60px;
+  }
+
+  /* Banner negative margins must match container padding */
+  .detail-banner {
+    margin: -24px -16px 24px;
+    padding: 24px 16px 20px;
+    min-height: 170px;
+  }
+
+  .detail-hero {
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+  }
+
+  .detail-banner .hero-icon,
+  .detail-banner .hero-icon-placeholder {
+    width: 72px;
+    height: 72px;
+  }
+
+  .hero-name    { font-size: 22px; }
+  .unified-title { font-size: 22px; }
+
+  /* Unified header: stack title above tier tabs */
+  .unified-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  /* Tier tabs: horizontal scroll instead of wrapping */
+  .tier-nav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    width: 100%;
+    padding-bottom: 2px;
+  }
+  .tier-nav::-webkit-scrollbar { display: none; }
+  .tier-tab { flex-shrink: 0; }
+
+  /* Single-column stat grids */
+  .stat-grid { grid-template-columns: 1fr; }
+
+  /* Remove max-width cap on detail-full so content uses full width */
+  .detail-full { max-width: none; }
+
+  .list-body { padding-top: 0; }
+
+  /* Smaller entity card grid on tablet */
+  .entity-grid          { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+  .entity-grid--traders { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RESPONSIVE — 480px (small phones)
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .detail-container {
+    padding: 20px 12px 60px;
+  }
+
+  /* Banner negative margins match narrower container padding */
+  .detail-banner {
+    margin: -20px -12px 20px;
+    padding: 20px 12px 16px;
+    min-height: 150px;
+  }
+
+  .hero-icon,
+  .hero-icon-placeholder {
+    width: 64px;
+    height: 64px;
+  }
+
+  .detail-banner .hero-icon,
+  .detail-banner .hero-icon-placeholder {
+    width: 64px;
+    height: 64px;
+  }
+
+  .hero-name    { font-size: 20px; }
+
+  /* Truncate long breadcrumb names */
+  .bc-current {
+    display: inline-block;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: bottom;
+  }
+
+  /* 2-column entity card grid on phones */
+  .entity-grid,
+  .entity-grid--traders {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Tighten entity row text on narrow screens */
+  .er-sub { font-size: 10px; }
+}

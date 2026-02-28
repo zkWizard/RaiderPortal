@@ -772,6 +772,135 @@
     }
     .nav-back:hover { color: var(--cream); }
 
+    /* ═══════════════════════════════════════════════════════════
+       HAMBURGER BUTTON
+    ═══════════════════════════════════════════════════════════ */
+    .nav-hamburger {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 5px;
+      width: 36px;
+      height: 36px;
+      background: none;
+      border: 1px solid var(--border-bright);
+      border-radius: 6px;
+      cursor: pointer;
+      padding: 0 8px;
+      flex-shrink: 0;
+    }
+
+    .nav-hamburger span {
+      display: block;
+      width: 16px;
+      height: 2px;
+      background: var(--cream-dim);
+      border-radius: 1px;
+      pointer-events: none;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    .nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav-hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    .nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    /* ═══════════════════════════════════════════════════════════
+       RESPONSIVE — 768px (tablet / large phone)
+    ═══════════════════════════════════════════════════════════ */
+    @media (max-width: 768px) {
+      /* ── Topnav ─────────────────────────────────────────── */
+      .topnav { padding: 0 14px; gap: 6px; }
+      .nav-brand { margin-right: 0; }
+      .nav-brand-label { display: none; }
+
+      /* Show hamburger; move nav links into a fixed drawer */
+      .nav-hamburger { display: flex; }
+
+      .nav-links {
+        position: fixed;
+        top: var(--topnav-h);
+        left: 0;
+        right: 0;
+        display: none;
+        flex-direction: column;
+        background: rgba(9, 9, 11, 0.97);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-bottom: 1px solid var(--border-bright);
+        padding: 6px 0;
+        gap: 0;
+        z-index: 190;
+      }
+
+      .nav-links.mobile-open { display: flex; }
+
+      .nav-link {
+        padding: 14px 20px;
+        font-size: 14px;
+        border-radius: 0;
+        border-bottom: 1px solid rgba(42, 45, 54, 0.4);
+        letter-spacing: 0.04em;
+      }
+
+      .nav-link:last-child { border-bottom: none; }
+
+      .patch-tag { display: none; }
+      .nav-right { gap: 8px; }
+
+      /* Compact nav search: let it grow to fill available space */
+      .nav-search-wrap { max-width: none; }
+
+      /* ── Landing ────────────────────────────────────────── */
+      .landing {
+        padding-top: calc(var(--topnav-h) + 24px);
+        padding-bottom: 40px;
+        padding-left: 16px;
+        padding-right: 16px;
+        justify-content: flex-start;
+      }
+
+      .logo-group  { margin-bottom: 32px; }
+      .logo-emblem { width: 68px; height: 68px; margin-bottom: 18px; }
+      .logo-wordmark { font-size: 36px; }
+      .logo-tagline  { font-size: 10px; margin-top: 8px; }
+
+      /* ── Search ─────────────────────────────────────────── */
+      .search-group { gap: 14px; }
+      .searchbar    { height: 52px; }
+      .search-hint  { display: none; }
+      .search-btn   { padding: 0 18px; font-size: 11px; gap: 6px; }
+
+      /* ── Dropdown ───────────────────────────────────────── */
+      .search-result { height: 50px; }
+
+      /* ── Footer ─────────────────────────────────────────── */
+      .site-footer {
+        flex-direction: column;
+        gap: 6px;
+        padding: 14px 16px;
+        text-align: center;
+      }
+      .footer-dot { display: none; }
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       RESPONSIVE — 480px (small phones)
+    ═══════════════════════════════════════════════════════════ */
+    @media (max-width: 480px) {
+      .logo-wordmark { font-size: 28px; letter-spacing: 0.06em; }
+      .logo-tagline  { letter-spacing: 0.12em; }
+
+      /* Narrow the category selector to give the text input more room */
+      .search-cat { min-width: auto; }
+      .search-cat select { padding: 0 22px 0 10px; font-size: 10px; }
+
+      .search-btn { padding: 0 14px; }
+      .search-btn svg { display: none; }
+
+      .btn-signin { padding: 5px 10px; font-size: 10px; }
+    }
+
   </style>
 </head>
 <body>
@@ -833,6 +962,9 @@
     <div class="nav-right">
       <span class="patch-tag">Patch 1.4.2</span>
       <button class="btn-signin" type="button">Sign In</button>
+      <button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
     </div>
 
   </nav>
@@ -1257,6 +1389,35 @@
         document.getElementById('searchInput').focus();
       }
     });
+
+    // ─── Hamburger menu ─────────────────────────────────────────
+    {
+      const hamburger  = document.getElementById('navHamburger');
+      const navLinksEl = document.querySelector('.nav-links');
+
+      function closeMenu() {
+        navLinksEl.classList.remove('mobile-open');
+        hamburger.classList.remove('open');
+        hamburger.setAttribute('aria-expanded', 'false');
+      }
+
+      hamburger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = navLinksEl.classList.toggle('mobile-open');
+        hamburger.classList.toggle('open', isOpen);
+        hamburger.setAttribute('aria-expanded', String(isOpen));
+      });
+
+      // Tapping a nav link closes the drawer and navigates
+      navLinksEl.addEventListener('click', (e) => {
+        if (e.target.classList.contains('nav-link')) closeMenu();
+      });
+
+      // Click outside topnav closes the drawer
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.topnav')) closeMenu();
+      });
+    }
 
     // ─── Start the hash router ──────────────────────────────────
     // Runs immediately so direct-URL visits work without waiting for index.
