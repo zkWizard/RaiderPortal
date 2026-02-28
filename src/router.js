@@ -36,33 +36,46 @@ function escHtml(s) {
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+/** Suppress slide animation on direct URL loads (first paint). */
+let _initialLoad = true;
+
 /**
  * Reads `window.location.hash`, shows the appropriate view, and calls the
  * matching renderer. Called on hashchange and on initial page load.
  */
 async function handleRoute() {
-  const landing    = document.getElementById('landing');
-  const detailView = document.getElementById('detailView');
-  const content    = document.getElementById('detailContent');
+  const body    = document.body;
+  const content = document.getElementById('detailContent');
+  const detail  = document.getElementById('detailView');
 
   const hash  = window.location.hash;
   const match = hash.match(ROUTE_RE);
 
+  // Toggle body.detail-active; suppress animation on first paint
+  function setDetailActive(active) {
+    if (_initialLoad) body.classList.add('no-transition');
+    body.classList.toggle('detail-active', active);
+    if (_initialLoad) {
+      // Two rAFs: let the class paint before re-enabling transitions
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => body.classList.remove('no-transition'))
+      );
+    }
+    _initialLoad = false;
+  }
+
   if (!match) {
-    // No detail route — restore landing
-    landing.hidden    = false;
-    detailView.hidden = true;
-    document.title    = DEFAULT_TITLE;
+    setDetailActive(false);
+    document.title = DEFAULT_TITLE;
+    document.dispatchEvent(new CustomEvent('rp:showLanding'));
     return;
   }
 
   const [, type, rawId] = match;
   const id = decodeURIComponent(rawId);
 
-  // Switch to detail view
-  landing.hidden    = true;
-  detailView.hidden = false;
-  window.scrollTo(0, 0);
+  setDetailActive(true);
+  detail.scrollTop = 0;
 
   // Show loading state immediately
   content.innerHTML = `

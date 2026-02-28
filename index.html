@@ -40,16 +40,16 @@
       font-size: 14px;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
+      height: 100%;
+      overflow: hidden;
     }
 
     body {
       background: var(--bg-void);
       color: var(--text-primary);
       font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      overflow-x: hidden;
+      height: 100%;
+      overflow: hidden;
     }
 
     a { text-decoration: none; color: inherit; }
@@ -206,20 +206,26 @@
        MAIN LANDING — full-viewport centered layout
     ═══════════════════════════════════════════════════════════ */
     .landing {
-      flex: 1;
+      position: fixed;
+      inset: 0;
+      overflow-y: auto;
       display: flex;
       flex-direction: column;
       align-items: center;
       /* Slightly above true vertical center — classic for search portals */
       justify-content: center;
       padding-top: calc(var(--topnav-h) + 40px);
-      padding-bottom: 120px;
+      padding-bottom: 80px;
       padding-left: 24px;
       padding-right: 24px;
-      min-height: 100vh;
-      position: relative;
-      z-index: 1;
+      z-index: 2;
+      transform: translateY(0);
+      transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+      will-change: transform;
+      background: var(--bg-void);
     }
+    body.detail-active .landing   { transform: translateY(-100%); }
+    body.no-transition .landing   { transition: none !important; }
 
     /* Atmospheric glow centered on the logo — orange-to-cyan radial */
     .atm-glow {
@@ -730,6 +736,84 @@
       letter-spacing: 0.03em;
     }
 
+    /* ═══════════════════════════════════════════════════════════
+       COMPACT NAV SEARCH — visible only on detail pages
+    ═══════════════════════════════════════════════════════════ */
+    .nav-search-wrap {
+      display: none;
+      flex: 1;
+      max-width: 500px;
+      align-items: center;
+      gap: 10px;
+    }
+    body.detail-active .nav-search-wrap { display: flex; }
+    body.detail-active .nav-links       { display: none; }
+
+    .nav-searchbar-wrap { position: relative; flex: 1; }
+
+    .nav-searchbar {
+      display: flex;
+      align-items: stretch;
+      height: 34px;
+      background: var(--bg-base);
+      border: 1px solid var(--border-bright);
+      border-radius: 7px;
+      overflow: hidden;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .nav-searchbar:focus-within {
+      border-color: rgba(255, 86, 0, 0.55);
+      box-shadow: 0 0 0 3px rgba(255, 86, 0, 0.10);
+    }
+
+    .nav-search-cat {
+      height: 100%;
+      padding: 0 10px;
+      font-size: 11px;
+      font-weight: 700;
+      font-family: inherit;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: var(--bg-elevated);
+      border: none;
+      border-right: 1px solid var(--border-bright);
+      color: var(--text-secondary);
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    .nav-search-cat:hover,
+    .nav-search-cat:focus { color: var(--cream); outline: none; }
+
+    .nav-search-input {
+      flex: 1;
+      height: 100%;
+      padding: 0 12px;
+      font-size: 13px;
+      font-family: inherit;
+      background: transparent;
+      border: none;
+      color: var(--cream);
+      outline: none;
+      min-width: 0;
+    }
+    .nav-search-input::placeholder { color: var(--text-muted); }
+
+    .nav-back {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 7px;
+      flex-shrink: 0;
+      color: var(--text-secondary);
+      border: 1px solid var(--border-bright);
+      background: var(--bg-base);
+      transition: color 0.12s, border-color 0.12s;
+    }
+    .nav-back:hover { color: var(--cream); }
+
   </style>
 </head>
 <body>
@@ -754,6 +838,31 @@
       </svg>
       <span class="nav-brand-label">RaiderPortal</span>
     </a>
+
+    <!-- Compact search — visible only on detail pages (body.detail-active) -->
+    <div class="nav-search-wrap" id="navSearchWrap">
+      <a class="nav-back" href="#" aria-label="Back to search" title="Back to search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
+      </a>
+      <div class="nav-searchbar-wrap" id="navSearchBarWrap">
+        <div class="nav-searchbar" id="navSearchBar">
+          <select id="navSearchCategory" class="nav-search-cat" aria-label="Search category">
+            <option value="all">All</option>
+            <option value="items">Items</option>
+            <option value="arcs">ARCs</option>
+            <option value="quests">Quests</option>
+            <option value="traders">Traders</option>
+          </select>
+          <input id="navSearchInput" class="nav-search-input" type="search"
+                 placeholder="Search database…" autocomplete="off" spellcheck="false"
+                 aria-label="Search RaiderPortal"/>
+        </div>
+        <!-- nav dropdown injected here by JS -->
+      </div>
+    </div>
 
     <div class="nav-links">
       <a class="nav-link" href="#">Database</a>
@@ -924,55 +1033,33 @@
 
     </div><!-- /.search-group -->
 
+    <footer class="site-footer" role="contentinfo">
+      <span class="site-footer-item">© 2026 RaiderPortal</span>
+      <span class="footer-dot" aria-hidden="true">◆</span>
+      <span class="site-footer-item">
+        Data from <a href="https://metaforge.app/arc-raiders" target="_blank" rel="noopener">MetaForge</a>
+      </span>
+      <span class="footer-dot" aria-hidden="true">◆</span>
+      <span class="site-footer-item">Fan project — not affiliated with Embark Studios</span>
+    </footer>
+
   </main><!-- /.landing -->
 
 
   <!-- ═══════════════════════════════════════════════════════════
-       DETAIL VIEW — shown by router when a hash route matches.
-       Initially hidden; router swaps it with .landing on navigation.
+       DETAIL VIEW — slides in from below when a hash route matches.
+       Driven by body.detail-active via CSS transforms.
   ═══════════════════════════════════════════════════════════ -->
-  <div id="detailView" class="detail-view" hidden>
+  <div id="detailView" class="detail-view">
     <div class="detail-container">
       <div id="detailContent"></div>
     </div>
   </div>
 
 
-  <!-- ═══════════════════════════════════════════════════════════
-       FOOTER
-  ═══════════════════════════════════════════════════════════ -->
-  <footer class="site-footer" role="contentinfo">
-    <span class="site-footer-item">© 2026 RaiderPortal</span>
-    <span class="footer-dot" aria-hidden="true">◆</span>
-    <span class="site-footer-item">
-      Data from <a href="https://metaforge.app/arc-raiders" target="_blank" rel="noopener">MetaForge</a>
-    </span>
-    <span class="footer-dot" aria-hidden="true">◆</span>
-    <span class="site-footer-item">Fan project — not affiliated with Embark Studios</span>
-  </footer>
-
-
   <script type="module">
     import { buildIndex, search, getIndexState } from './src/services/searchIndex.js';
-    import { initRouter }         from './src/router.js';
-
-    // ─── DOM refs ──────────────────────────────────────────────
-    const searchInput    = document.getElementById('searchInput');
-    const searchBarEl    = document.getElementById('searchBar');
-    const categorySelect = document.getElementById('searchCategory');
-    const searchWrap     = document.querySelector('.search-bar-wrap');
-
-    // ─── Loading bar (child of .searchbar — clipped by its overflow:hidden) ──
-    const loadingBar = document.createElement('div');
-    loadingBar.className = 'search-loading-bar';
-    searchBarEl.appendChild(loadingBar);
-
-    // ─── Dropdown (sibling of .searchbar, anchored by .search-bar-wrap) ──
-    const dropdown = document.createElement('div');
-    dropdown.className = 'search-dropdown';
-    dropdown.setAttribute('role', 'listbox');
-    dropdown.setAttribute('aria-label', 'Search results');
-    searchWrap.appendChild(dropdown);
+    import { initRouter } from './src/router.js';
 
     // ─── Category select → index type ──────────────────────────
     const CATEGORY_TYPE = {
@@ -985,8 +1072,6 @@
     };
 
     // ─── Route helper ───────────────────────────────────────────
-    // entry.type is capitalized ("Item", "ARC", etc.) but the router
-    // expects lowercase slugs (#/item/:id, #/arc/:id, etc.)
     // Items use the normalised base-name slug so all tiers share one page.
     function routeFor(entry) {
       if (entry.type === 'Item') {
@@ -996,8 +1081,6 @@
     }
 
     // ─── Placeholder icon SVGs (one per type) ───────────────────
-    // Keys are lowercase for CSS class names and URL routing.
-    // entry.type comes in capitalized ("Item", "ARC", etc.) — use .toLowerCase() to look up.
     const TYPE_COLORS = {
       item:   '#00e5ff',
       arc:    '#ff5600',
@@ -1024,13 +1107,11 @@
       return el;
     }
 
-    // ─── Build a single result row element ──────────────────────
     function buildRow(entry) {
       const a = document.createElement('a');
       a.className = 'search-result';
       a.href = routeFor(entry);
 
-      // Icon — 32×32; fall back to type-specific placeholder on error or absence
       if (entry.icon) {
         const img = document.createElement('img');
         img.className = 'sr-icon';
@@ -1043,7 +1124,6 @@
         a.appendChild(makePlaceholder(entry.type));
       }
 
-      // Body — name + meta stacked
       const body = document.createElement('div');
       body.className = 'sr-body';
 
@@ -1052,7 +1132,6 @@
       nameEl.textContent = entry.name;
       body.appendChild(nameEl);
 
-      // Secondary line: subtype · rarity (omit empty parts)
       const metaParts = [entry.subtype, entry.rarity].filter(Boolean);
       if (metaParts.length) {
         const meta = document.createElement('span');
@@ -1063,7 +1142,6 @@
 
       a.appendChild(body);
 
-      // Type badge — CSS class uses lowercase key
       const badge = document.createElement('span');
       const typeKey = entry.type.toLowerCase();
       badge.className = `type-badge ${typeKey}`;
@@ -1073,143 +1151,192 @@
       return a;
     }
 
-    // ─── Dropdown state ─────────────────────────────────────────
-    let activeIdx      = -1;
-    let currentResults = [];
+    // ─── Search bar factory ──────────────────────────────────────
+    // Creates a fully functional search bar (dropdown, keyboard nav, debounce)
+    // on any input/select/container triplet. Returns { loadingBar, runSearch }.
+    function initSearchBar({ inputEl, categoryEl, wrapEl, barEl, onNavigate }) {
+      let activeIdx      = -1;
+      let currentResults = [];
+      let debounceTimer;
 
-    function showDropdownMessage(text) {
-      dropdown.innerHTML = '';
-      const el = document.createElement('div');
-      el.className = 'search-no-results';
-      el.textContent = text;
-      dropdown.appendChild(el);
-      dropdown.classList.add('open');
-    }
-
-    function openDropdown(results, query) {
-      currentResults = results;
-      activeIdx = -1;
-      dropdown.innerHTML = '';
-
-      if (results.length === 0) {
-        showDropdownMessage(`No results found for "${query}"`);
-        return;
+      // Optional loading bar — injected into barEl if provided
+      let loadingBar = null;
+      if (barEl) {
+        loadingBar = document.createElement('div');
+        loadingBar.className = 'search-loading-bar';
+        barEl.appendChild(loadingBar);
       }
 
-      results.forEach((entry) => dropdown.appendChild(buildRow(entry)));
-      dropdown.classList.add('open');
-    }
+      // Dropdown — injected into wrapEl
+      const dropdown = document.createElement('div');
+      dropdown.className = 'search-dropdown';
+      dropdown.setAttribute('role', 'listbox');
+      dropdown.setAttribute('aria-label', 'Search results');
+      wrapEl.appendChild(dropdown);
 
-    function closeDropdown() {
-      dropdown.classList.remove('open');
-      activeIdx = -1;
-    }
-
-    function setActive(idx) {
-      const rows = dropdown.querySelectorAll('.search-result');
-      rows.forEach((r, i) => r.classList.toggle('active', i === idx));
-      activeIdx = idx;
-      if (idx >= 0) rows[idx]?.scrollIntoView({ block: 'nearest' });
-    }
-
-    // ─── Search logic ───────────────────────────────────────────
-    function runSearch() {
-      const q = searchInput.value.trim();
-      if (q.length < 2) { closeDropdown(); return; }
-
-      // Events are not yet in the search index
-      if (categorySelect.value === 'events') { closeDropdown(); return; }
-
-      // Show loading message if the index isn't ready yet
-      const { state } = getIndexState();
-      if (state !== 'ready') {
-        showDropdownMessage('Loading game database…');
-        return;
+      function showDropdownMessage(text) {
+        dropdown.innerHTML = '';
+        const el = document.createElement('div');
+        el.className = 'search-no-results';
+        el.textContent = text;
+        dropdown.appendChild(el);
+        dropdown.classList.add('open');
       }
 
-      const type    = CATEGORY_TYPE[categorySelect.value];
-      const results = search(q, { limit: 25, type });
-      openDropdown(results, q);
-    }
+      function openDropdown(results, query) {
+        currentResults = results;
+        activeIdx = -1;
+        dropdown.innerHTML = '';
+        if (results.length === 0) {
+          showDropdownMessage(`No results found for "${query}"`);
+          return;
+        }
+        results.forEach((entry) => dropdown.appendChild(buildRow(entry)));
+        dropdown.classList.add('open');
+      }
 
-    let debounceTimer;
-    function scheduleSearch() {
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(runSearch, 150);
-    }
+      function closeDropdown() {
+        dropdown.classList.remove('open');
+        activeIdx = -1;
+      }
 
-    // ─── Input listeners ────────────────────────────────────────
-    searchInput.addEventListener('input', scheduleSearch);
-    categorySelect.addEventListener('change', scheduleSearch);
+      function setActive(idx) {
+        const rows = dropdown.querySelectorAll('.search-result');
+        rows.forEach((r, i) => r.classList.toggle('active', i === idx));
+        activeIdx = idx;
+        if (idx >= 0) rows[idx]?.scrollIntoView({ block: 'nearest' });
+      }
 
-    // ─── Keyboard navigation inside the dropdown ────────────────
-    searchInput.addEventListener('keydown', (e) => {
-      const isOpen = dropdown.classList.contains('open');
+      function runSearch() {
+        const q = inputEl.value.trim();
+        if (q.length < 2) { closeDropdown(); return; }
+        if (categoryEl.value === 'events') { closeDropdown(); return; }
 
-      if (e.key === 'ArrowDown') {
-        if (!isOpen) return;
-        e.preventDefault();
-        setActive(Math.min(activeIdx + 1, currentResults.length - 1));
-
-      } else if (e.key === 'ArrowUp') {
-        if (!isOpen) return;
-        e.preventDefault();
-        setActive(Math.max(activeIdx - 1, 0));
-
-      } else if (e.key === 'Enter') {
-        if (isOpen && activeIdx >= 0) {
-          e.preventDefault();
-          window.location.href = routeFor(currentResults[activeIdx]);
-          closeDropdown();
-          searchInput.blur();
-        } else {
-          // No highlighted row — treat Enter as a normal search
-          runSearch();
+        const { state } = getIndexState();
+        if (state !== 'ready') {
+          showDropdownMessage('Loading game database…');
+          return;
         }
 
-      } else if (e.key === 'Escape') {
+        const type    = CATEGORY_TYPE[categoryEl.value];
+        const results = search(q, { limit: 25, type });
+        openDropdown(results, q);
+      }
+
+      function scheduleSearch() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(runSearch, 150);
+      }
+
+      inputEl.addEventListener('input', scheduleSearch);
+      categoryEl.addEventListener('change', scheduleSearch);
+
+      inputEl.addEventListener('keydown', (e) => {
+        const isOpen = dropdown.classList.contains('open');
+
+        if (e.key === 'ArrowDown') {
+          if (!isOpen) return;
+          e.preventDefault();
+          setActive(Math.min(activeIdx + 1, currentResults.length - 1));
+
+        } else if (e.key === 'ArrowUp') {
+          if (!isOpen) return;
+          e.preventDefault();
+          setActive(Math.max(activeIdx - 1, 0));
+
+        } else if (e.key === 'Enter') {
+          if (isOpen && activeIdx >= 0) {
+            e.preventDefault();
+            onNavigate(routeFor(currentResults[activeIdx]));
+            closeDropdown();
+            inputEl.blur();
+          } else {
+            runSearch();
+          }
+
+        } else if (e.key === 'Escape') {
+          closeDropdown();
+          inputEl.blur();
+        }
+      });
+
+      // Close when clicking outside the wrapper
+      document.addEventListener('click', (e) => {
+        if (!wrapEl.contains(e.target)) closeDropdown();
+      });
+
+      // Intercept result clicks so onNavigate is always called (allows saving query)
+      dropdown.addEventListener('click', (e) => {
+        const resultEl = e.target.closest('.search-result');
+        if (resultEl) {
+          e.preventDefault();
+          onNavigate(resultEl.getAttribute('href'));
+        }
         closeDropdown();
-        searchInput.blur();
+        inputEl.blur();
+      });
+
+      return { loadingBar, runSearch };
+    }
+
+    // ─── Landing search ──────────────────────────────────────────
+    let savedQuery = '';
+
+    const landingSearch = initSearchBar({
+      inputEl:    document.getElementById('searchInput'),
+      categoryEl: document.getElementById('searchCategory'),
+      wrapEl:     document.querySelector('.search-bar-wrap'),
+      barEl:      document.getElementById('searchBar'),
+      onNavigate: (href) => {
+        savedQuery = document.getElementById('searchInput').value;
+        window.location.href = href;
+      },
+    });
+
+    // ─── Nav (compact) search ────────────────────────────────────
+    initSearchBar({
+      inputEl:    document.getElementById('navSearchInput'),
+      categoryEl: document.getElementById('navSearchCategory'),
+      wrapEl:     document.getElementById('navSearchBarWrap'),
+      barEl:      null,
+      onNavigate: (href) => { window.location.href = href; },
+    });
+
+    // ─── Restore search query when returning to landing ──────────
+    document.addEventListener('rp:showLanding', () => {
+      const inp = document.getElementById('searchInput');
+      if (savedQuery && inp.value !== savedQuery) {
+        inp.value = savedQuery;
+        landingSearch.runSearch();
       }
     });
 
-    // ─── Close on click outside the search bar wrap ─────────────
-    document.addEventListener('click', (e) => {
-      if (!e.target.closest('.search-bar-wrap')) closeDropdown();
-    });
-
-    // Close (and let the href navigate) when a result is clicked
-    dropdown.addEventListener('click', () => {
-      closeDropdown();
-      searchInput.blur();
-    });
-
-    // ─── "/" shortcut — focus the search input ──────────────────
+    // ─── "/" shortcut — focus the landing search input ──────────
     document.addEventListener('keydown', (e) => {
       const tag = document.activeElement?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
       if (e.key === '/') {
         e.preventDefault();
-        searchInput.focus();
+        document.getElementById('searchInput').focus();
       }
     });
 
     // ─── Start the hash router ──────────────────────────────────
-    // This runs immediately so direct-URL visits (e.g. #/item/barricade-kit)
-    // work without waiting for the search index to finish loading.
+    // Runs immediately so direct-URL visits work without waiting for index.
     initRouter();
 
     // ─── Kick off index build on page load ──────────────────────
-    loadingBar.classList.add('active');
+    if (landingSearch.loadingBar) landingSearch.loadingBar.classList.add('active');
 
     buildIndex()
       .then(() => {
-        loadingBar.classList.remove('active');
-        // If the user typed before the index was ready, run the search now
-        if (searchInput.value.trim().length >= 2) runSearch();
+        if (landingSearch.loadingBar) landingSearch.loadingBar.classList.remove('active');
+        if (document.getElementById('searchInput').value.trim().length >= 2) {
+          landingSearch.runSearch();
+        }
       })
       .catch((err) => {
-        loadingBar.classList.remove('active');
+        if (landingSearch.loadingBar) landingSearch.loadingBar.classList.remove('active');
         console.error('[RaiderPortal] Search index build failed:', err);
       });
   </script>
