@@ -48,52 +48,44 @@ function bannerHeader(title, sub) {
 
 const RARITY_RANK = { Common: 0, Uncommon: 1, Rare: 2, Epic: 3, Legendary: 4 };
 
-// Maps every known item_type (lowercase) to one of the 6 display buckets.
-// Derived from the sets in itemPage.js plus weapon catch-all.
+// Maps exact API item_type values (lowercased) to one of the 6 display buckets.
+// Based on the real item_type values observed in the MetaForge API (see data-audit.md).
+// Returns null for types that don't belong in any bucket — those items still appear
+// under "All" but are hidden when any specific filter is active.
 const BUCKET_MAP = new Map([
+  // ── Weapons ────────────────────────────────────────────
+  ['weapon',            'Weapons'],
+  // ── Attachments ────────────────────────────────────────
+  ['modification',      'Attachments'],
+  ['mods',              'Attachments'],
+  // ── Consumables ────────────────────────────────────────
+  ['quick use',         'Consumables'],
+  ['consumable',        'Consumables'],
+  // ── Materials ──────────────────────────────────────────
+  ['topside material',  'Materials'],
+  ['refined material',  'Materials'],
+  ['basic material',    'Materials'],
+  ['advanced material', 'Materials'],
+  ['material',          'Materials'],
   // ── Blueprints ─────────────────────────────────────────
   ['blueprint',         'Blueprints'],
-  ['recipe',            'Blueprints'],
   // ── Armor ──────────────────────────────────────────────
-  ['armor',             'Armor'],
-  ['helmet',            'Armor'],
-  ['backpack',          'Armor'],
   ['shield',            'Armor'],
-  ['chest armor',       'Armor'],
-  ['leg armor',         'Armor'],
-  ['body armor',        'Armor'],
-  ['utility',           'Armor'],
-  // ── Consumables (inc. grenades + quick-use) ────────────
-  ['consumable',        'Consumables'],
-  ['medical',           'Consumables'],
-  ['medical item',      'Consumables'],
-  ['medkit',            'Consumables'],
-  ['food',              'Consumables'],
-  ['drink',             'Consumables'],
-  ['grenade',           'Consumables'],
-  ['throwable',         'Consumables'],
-  ['explosive',         'Consumables'],
-  ['quick use',         'Consumables'],
-  // ── Attachments ────────────────────────────────────────
-  ['mod',               'Attachments'],
-  ['weapon mod',        'Attachments'],
-  ['attachment',        'Attachments'],
-  // ── Materials (inc. keys / cards) ──────────────────────
-  ['material',          'Materials'],
-  ['resource',          'Materials'],
-  ['component',         'Materials'],
-  ['crafting material', 'Materials'],
-  ['crafting resource', 'Materials'],
-  ['key',               'Materials'],
-  ['access card',       'Materials'],
-  ['keycard',           'Materials'],
-  ['card',              'Materials'],
 ]);
 
-// Anything not in BUCKET_MAP is treated as a Weapon.
+// Tracks item_type values seen that don't map to any bucket (logged once each).
+const _loggedUncategorized = new Set();
+
+// Returns the bucket name for an item_type, or null if uncategorized.
 function getBucket(itemType) {
-  if (!itemType) return 'Weapons';
-  return BUCKET_MAP.get(itemType.toLowerCase().trim()) ?? 'Weapons';
+  if (!itemType) return null;
+  const key = itemType.toLowerCase().trim();
+  const bucket = BUCKET_MAP.get(key) ?? null;
+  if (bucket === null && !_loggedUncategorized.has(itemType)) {
+    console.log(`[Items] Uncategorized item_type: "${itemType}"`);
+    _loggedUncategorized.add(itemType);
+  }
+  return bucket;
 }
 
 const BUCKET_LABELS = ['Weapons', 'Attachments', 'Consumables', 'Materials', 'Blueprints', 'Armor'];
