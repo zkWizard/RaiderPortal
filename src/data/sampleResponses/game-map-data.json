@@ -1,0 +1,18 @@
+{
+  "_note": "NOT AVAILABLE — internal endpoint, requires undocumented parameters",
+  "_status": 500,
+  "_error": "mapID: null does not exist",
+  "_investigation": {
+    "url": "https://metaforge.app/api/game-map-data",
+    "documented": false,
+    "findings": [
+      "Requires both `mapID` and `tableID` query parameters.",
+      "These are internal Supabase row/table IDs embedded only in MetaForge's SvelteKit client bundle — not exposed in any public docs or manifest.",
+      "All tested parameter combinations (numeric IDs 1-10, map name slugs, hyphenated slugs) return HTTP 500.",
+      "MetaForge's public API documentation (https://metaforge.app/arc-raiders/api) does not list this endpoint.",
+      "The five documented public endpoints (items, arcs, quests, traders, events-schedule) all work correctly.",
+      "Map location/POI data may be partially derivable from quest `position` fields (x/y coordinates) and `locations` arrays already available in the quests endpoint."
+    ],
+    "recommendation": "Do not use this endpoint. Use quest positions and locations from /api/arc-raiders/quests for map marker data, or check MetaForge's Discord for if/when they expose map data publicly."
+  }
+}

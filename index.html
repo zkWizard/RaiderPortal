@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RaiderPortal — ARC Raiders Database</title>
+  <link rel="stylesheet" href="src/detail.css">
+  <style>
+
+    /* ═══════════════════════════════════════════════════════════
+       RESET & DESIGN TOKENS
+    ═══════════════════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-void:     #09090b;
+      --bg-base:     #0f1013;
+      --bg-elevated: #1e2028;
+
+      --border:        #2a2d36;
+      --border-bright: #3a3d4a;
+
+      --cream:       #ece2d0;
+      --cream-dim:   #9a9080;
+      --orange:      #ff5600;
+      --orange-dim:  #cc4400;
+      --orange-glow: rgba(255, 86, 0, 0.14);
+      --cyan:        #00e5ff;
+      --red:         #d0002a;
+      --yellow:      #ffcc00;
+
+      --text-primary:   #ece2d0;
+      --text-secondary: #8a8a9a;
+      --text-muted:     #4e5060;
+
+      --topnav-h: 48px;
+    }
+
+    html {
+      font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      background: var(--bg-void);
+      color: var(--text-primary);
+      font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    a { text-decoration: none; color: inherit; }
+    button { cursor: pointer; font-family: inherit; }
+
+    /* ═══════════════════════════════════════════════════════════
+       DOT GRID — subtle depth layer, stays fixed behind everything
+    ═══════════════════════════════════════════════════════════ */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient(circle, rgba(255,255,255,0.028) 1px, transparent 1px);
+      background-size: 38px 38px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       VIGNETTE — darkens all four edges for depth and focus
+    ═══════════════════════════════════════════════════════════ */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(
+        ellipse 110% 100% at 50% 50%,
+        transparent 35%,
+        rgba(9, 9, 11, 0.75) 100%
+      );
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       TOP NAVIGATION
+    ═══════════════════════════════════════════════════════════ */
+    .topnav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--topnav-h);
+      background: rgba(9, 9, 11, 0.80);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(42, 45, 54, 0.9);
+      display: flex;
+      align-items: center;
+      padding: 0 28px;
+      gap: 8px;
+      z-index: 200;
+    }
+
+    /* ARC Raiders stripe accent line beneath the nav */
+    .topnav::after {
+      content: '';
+      position: absolute;
+      bottom: -1px; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(0, 229, 255, 0.5) 15%,
+        rgba(255, 204, 0, 0.5) 35%,
+        rgba(255, 86, 0, 0.6) 60%,
+        rgba(208, 0, 42, 0.4) 80%,
+        transparent 100%
+      );
+    }
+
+    /* Small "RP" brand mark in the nav */
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-right: 28px;
+      flex-shrink: 0;
+    }
+
+    .nav-brand-mark {
+      width: 26px;
+      height: 26px;
+    }
+
+    .nav-brand-label {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--cream);
+    }
+
+    /* Nav links */
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      flex: 1;
+    }
+
+    .nav-link {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      padding: 6px 11px;
+      border-radius: 5px;
+      letter-spacing: 0.03em;
+      transition: color 0.12s, background 0.12s;
+    }
+
+    .nav-link:hover {
+      color: var(--cream);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    /* Right side: patch tag + sign in */
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-left: auto;
+    }
+
+    .patch-tag {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 3px 7px;
+    }
+
+    .btn-signin {
+      background: none;
+      border: 1px solid var(--border-bright);
+      border-radius: 5px;
+      color: var(--cream-dim);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 5px 16px;
+      transition: all 0.15s;
+    }
+
+    .btn-signin:hover {
+      color: var(--cream);
+      border-color: var(--orange);
+      background: var(--orange-glow);
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       MAIN LANDING — full-viewport centered layout
+    ═══════════════════════════════════════════════════════════ */
+    .landing {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      /* Slightly above true vertical center — classic for search portals */
+      justify-content: center;
+      padding-top: calc(var(--topnav-h) + 40px);
+      padding-bottom: 120px;
+      padding-left: 24px;
+      padding-right: 24px;
+      min-height: 100vh;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Atmospheric glow centered on the logo — orange-to-cyan radial */
+    .atm-glow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -58%);
+      width: 1000px;
+      height: 560px;
+      background: radial-gradient(
+        ellipse at 50% 50%,
+        rgba(255, 86, 0,  0.065) 0%,
+        rgba(0, 229, 255, 0.040) 40%,
+        transparent 68%
+      );
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       LOGO GROUP
+    ═══════════════════════════════════════════════════════════ */
+    .logo-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 56px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Emblem: displayed at 92px, glows warm */
+    .logo-emblem {
+      width: 92px;
+      height: 92px;
+      margin-bottom: 28px;
+      filter:
+        drop-shadow(0 0 18px rgba(255, 86, 0, 0.40))
+        drop-shadow(0 0 40px rgba(255, 86, 0, 0.18))
+        drop-shadow(0 0 8px  rgba(0, 229, 255, 0.20));
+      transition: filter 0.4s ease;
+    }
+
+    .logo-emblem:hover {
+      filter:
+        drop-shadow(0 0 24px rgba(255, 86, 0, 0.60))
+        drop-shadow(0 0 56px rgba(255, 86, 0, 0.26))
+        drop-shadow(0 0 12px rgba(0, 229, 255, 0.35));
+    }
+
+    /* Wordmark: gradient text matching the ARC Raiders stripe palette */
+    .logo-wordmark {
+      font-size: 52px;
+      font-weight: 900;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      line-height: 1;
+      user-select: none;
+      background: linear-gradient(
+        95deg,
+        #00e5ff  0%,
+        #b8d840 22%,
+        #ffcc00 38%,
+        #ff5600 62%,
+        #d0002a 100%
+      );
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Tagline */
+    .logo-tagline {
+      margin-top: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.20em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       SEARCH GROUP
+    ═══════════════════════════════════════════════════════════ */
+    .search-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 22px;
+      width: 100%;
+      max-width: 680px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Search bar ───────────────────────────────────────── */
+    .searchbar {
+      position: relative;   /* anchor for the loading bar pseudo-child */
+      width: 100%;
+      height: 60px;
+      display: flex;
+      align-items: stretch;
+      background: var(--bg-base);
+      border: 1px solid var(--border-bright);
+      border-radius: 10px;
+      overflow: hidden;
+      transition:
+        border-color 0.18s ease,
+        box-shadow 0.22s ease;
+    }
+
+    .searchbar:focus-within {
+      border-color: var(--orange);
+      box-shadow:
+        0 0 0 3px var(--orange-glow),
+        0 20px 60px rgba(0, 0, 0, 0.55),
+        0 4px 20px rgba(255, 86, 0, 0.14);
+    }
+
+    /* Category <select> */
+    .search-cat {
+      position: relative;
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+      min-width: 110px;
+    }
+
+    .search-cat select {
+      appearance: none;
+      -webkit-appearance: none;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-secondary);
+      font-size: 11px;
+      font-weight: 700;
+      font-family: inherit;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      padding: 0 34px 0 18px;
+      height: 100%;
+      width: 100%;
+      cursor: pointer;
+      transition: color 0.12s;
+    }
+
+    /* Style the option elements (limited in cross-browser CSS) */
+    .search-cat select option {
+      background: #1a1c22;
+      color: var(--cream);
+      font-size: 13px;
+      text-transform: none;
+      letter-spacing: 0;
+      font-weight: 600;
+    }
+
+    .search-cat select:hover,
+    .search-cat select:focus {
+      color: var(--cream);
+    }
+
+    /* Custom chevron arrow */
+    .search-cat::after {
+      content: '';
+      position: absolute;
+      right: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0; height: 0;
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-top: 5px solid var(--text-muted);
+      pointer-events: none;
+      transition: border-top-color 0.12s;
+    }
+
+    .search-cat:focus-within::after {
+      border-top-color: var(--orange);
+    }
+
+    /* Vertical rule between select and input */
+    .search-rule {
+      width: 1px;
+      background: var(--border);
+      margin: 13px 0;
+      flex-shrink: 0;
+    }
+
+    /* Text input */
+    .search-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-primary);
+      font-size: 15px;
+      font-family: inherit;
+      padding: 0 20px;
+      caret-color: var(--orange);
+      min-width: 0;
+    }
+
+    .search-input::placeholder {
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    /* Keyboard shortcut hint — shown inside the input when empty */
+    .search-hint {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding-right: 16px;
+      flex-shrink: 0;
+    }
+
+    .search-hint kbd {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: inherit;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-muted);
+      border: 1px solid var(--border-bright);
+      border-radius: 3px;
+      padding: 1px 5px;
+      line-height: 1.4;
+      letter-spacing: 0;
+    }
+
+    /* Hide hint when input is focused or has content */
+    .searchbar:focus-within .search-hint { display: none; }
+
+    /* Search button */
+    .search-btn {
+      background: var(--orange);
+      border: none;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      padding: 0 26px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+
+    .search-btn:hover  { background: #ff6d1f; }
+    .search-btn:active { background: var(--orange-dim); }
+
+    /* ── Browse category links ───────────────────────────── */
+    .browse-links {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 2px;
+    }
+
+    .browse-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 0 10px 0 0;
+    }
+
+    .browse-link {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      padding: 5px 10px;
+      border-radius: 5px;
+      letter-spacing: 0.02em;
+      transition: color 0.12s, background 0.12s;
+    }
+
+    .browse-link:hover {
+      color: var(--orange);
+      background: var(--orange-glow);
+    }
+
+    .browse-sep {
+      color: var(--text-muted);
+      font-size: 9px;
+      padding: 0 2px;
+      user-select: none;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       FOOTER
+    ═══════════════════════════════════════════════════════════ */
+    .site-footer {
+      position: relative;
+      z-index: 1;
+      padding: 16px 28px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      flex-wrap: wrap;
+    }
+
+    .site-footer-item {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.02em;
+    }
+
+    .site-footer-item a {
+      color: var(--text-muted);
+      transition: color 0.12s;
+    }
+
+    .site-footer-item a:hover { color: var(--cream); }
+
+    .footer-dot {
+      color: var(--border-bright);
+      font-size: 10px;
+      user-select: none;
+    }
+
+
+    /* ═══════════════════════════════════════════════════════════
+       SEARCH BAR WRAPPER — relative container for dropdown anchor
+    ═══════════════════════════════════════════════════════════ */
+    .search-bar-wrap {
+      width: 100%;
+      position: relative;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       INDEX LOADING BAR
+       A rainbow shimmer stripe at the bottom of the search bar
+       that plays while buildIndex() is running. Sits inside
+       .searchbar so overflow:hidden clips its rounded corners.
+    ═══════════════════════════════════════════════════════════ */
+    .search-loading-bar {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 2px;
+      pointer-events: none;
+      overflow: hidden;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .search-loading-bar.active { opacity: 1; }
+
+    .search-loading-bar::before {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 55%;
+      background: linear-gradient(
+        90deg,
+        transparent  0%,
+        #00e5ff     20%,
+        #ffcc00     45%,
+        #ff5600     72%,
+        #d0002a     90%,
+        transparent 100%
+      );
+      animation: rpShimmer 1.8s ease-in-out infinite;
+    }
+
+    @keyframes rpShimmer {
+      0%   { left: -55%; }
+      100% { left: 160%; }
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       SEARCH DROPDOWN
+    ═══════════════════════════════════════════════════════════ */
+    .search-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      background: #191b22;
+      border: 1px solid var(--border-bright);
+      border-radius: 10px;
+      max-height: 440px;
+      overflow-y: auto;
+      z-index: 50;
+      box-shadow:
+        0 24px 64px rgba(0, 0, 0, 0.72),
+        0 8px  24px rgba(0, 0, 0, 0.44),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+    }
+
+    .search-dropdown.open { display: block; }
+
+    /* Slim scrollbar */
+    .search-dropdown::-webkit-scrollbar         { width: 4px; }
+    .search-dropdown::-webkit-scrollbar-track   { background: transparent; }
+    .search-dropdown::-webkit-scrollbar-thumb   {
+      background: var(--border-bright);
+      border-radius: 2px;
+    }
+
+    /* ── Result row ───────────────────────────────────────── */
+    .search-result {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 16px;
+      height: 44px;
+      cursor: pointer;
+      color: var(--text-primary);
+      border-bottom: 1px solid rgba(42, 45, 54, 0.55);
+      transition: background 0.08s;
+    }
+
+    .search-result:last-child { border-bottom: none; }
+
+    .search-result:hover,
+    .search-result.active {
+      background: rgba(255, 86, 0, 0.08);
+    }
+
+    /* Icon thumbnail */
+    .sr-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: var(--bg-base);
+    }
+
+    /* Placeholder when no icon is available */
+    .sr-icon-placeholder {
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      flex-shrink: 0;
+      background: var(--bg-base);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Entry name */
+    .sr-name {
+      flex: 1;
+      font-size: 13px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+    }
+
+    /* Type badge pill */
+    .type-badge {
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      padding: 2px 6px;
+      border-radius: 3px;
+      border: 1px solid transparent;
+      flex-shrink: 0;
+      line-height: 1.5;
+    }
+
+    .type-badge.item   { color: var(--cyan);  background: rgba(0,  229, 255, 0.08); border-color: rgba(0,  229, 255, 0.20); }
+    .type-badge.arc    { color: var(--orange); background: rgba(255,  86,   0, 0.08); border-color: rgba(255,  86,   0, 0.22); }
+    .type-badge.quest  { color: var(--yellow); background: rgba(255, 204,   0, 0.08); border-color: rgba(255, 204,   0, 0.20); }
+    .type-badge.trader { color: #00b87a;       background: rgba(0,  184, 122, 0.08); border-color: rgba(0,  184, 122, 0.20); }
+
+    /* Empty / no-results state */
+    .search-no-results {
+      padding: 28px 20px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       TOP NAVIGATION
+  ═══════════════════════════════════════════════════════════ -->
+  <nav class="topnav" role="navigation" aria-label="Primary">
+
+    <!-- Small RP mark -->
+    <a class="nav-brand" href="#" aria-label="RaiderPortal home">
+      <svg class="nav-brand-mark" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect width="26" height="26" rx="5" fill="#0f1013"/>
+        <clipPath id="nm"><rect x="2" y="2" width="22" height="22" rx="3"/></clipPath>
+        <g clip-path="url(#nm)">
+          <polygon points="2,2 10,2 2,10" fill="#00e5ff" opacity="0.9"/>
+          <polygon points="10,2 18,2 2,18 2,10" fill="#ffcc00" opacity="0.85"/>
+          <polygon points="18,2 24,2 24,9 9,24 2,24 2,18" fill="#ff5600" opacity="0.9"/>
+          <polygon points="24,9 24,24 9,24" fill="#d0002a" opacity="0.85"/>
+        </g>
+        <rect x="2" y="2" width="22" height="22" rx="3" fill="none" stroke="rgba(236,226,208,0.12)" stroke-width="1"/>
+      </svg>
+      <span class="nav-brand-label">RaiderPortal</span>
+    </a>
+
+    <div class="nav-links">
+      <a class="nav-link" href="#">Database</a>
+      <a class="nav-link" href="#">Items</a>
+      <a class="nav-link" href="#">ARCs</a>
+      <a class="nav-link" href="#">Quests</a>
+      <a class="nav-link" href="#">Traders</a>
+      <a class="nav-link" href="#">Events</a>
+      <a class="nav-link" href="#">Tier List</a>
+    </div>
+
+    <div class="nav-right">
+      <span class="patch-tag">Patch 1.4.2</span>
+      <button class="btn-signin" type="button">Sign In</button>
+    </div>
+
+  </nav>
+
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MAIN LANDING
+  ═══════════════════════════════════════════════════════════ -->
+  <main class="landing" id="landing" role="main">
+
+    <!-- Atmospheric radial glow behind the logo -->
+    <div class="atm-glow" aria-hidden="true"></div>
+
+    <!-- ── Logo group ─────────────────────────────────────── -->
+    <header class="logo-group">
+
+      <!-- Emblem SVG — ARC Raiders diagonal stripe motif -->
+      <svg class="logo-emblem" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <clipPath id="ec">
+            <!-- Clip to an inner rounded square, leaving room for outer ring -->
+            <rect x="3" y="3" width="66" height="66" rx="11"/>
+          </clipPath>
+          <!-- Subtle inner glow filter on the whole shape -->
+          <filter id="innerGlow" x="-10%" y="-10%" width="120%" height="120%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="blur"/>
+            <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+          </filter>
+        </defs>
+
+        <!-- Outermost dark background -->
+        <rect width="72" height="72" rx="13" fill="#09090b"/>
+
+        <!-- Inner base — very slightly lighter -->
+        <rect x="3" y="3" width="66" height="66" rx="11" fill="#0f1013"/>
+
+        <!-- Diagonal stripe bands, clipped to the inner rounded square -->
+        <g clip-path="url(#ec)">
+          <!-- Cyan — thin top-left corner -->
+          <polygon points="3,3 22,3 3,22" fill="#00e5ff" opacity="0.92"/>
+          <!-- Yellow — thin diagonal strip -->
+          <polygon points="22,3 44,3 3,44 3,22" fill="#ffcc00" opacity="0.88"/>
+          <!-- Orange — dominant central band -->
+          <polygon points="44,3 69,3 69,30 30,69 3,69 3,44" fill="#ff5600" opacity="0.92"/>
+          <!-- Red — bottom-right corner -->
+          <polygon points="69,30 69,69 30,69" fill="#d0002a" opacity="0.88"/>
+        </g>
+
+        <!-- Inner border ring — cream at low opacity -->
+        <rect x="3" y="3" width="66" height="66" rx="11"
+              fill="none" stroke="rgba(236,226,208,0.14)" stroke-width="1"/>
+
+        <!-- "R" letterform — cream, dark stroke for legibility over stripes -->
+        <text
+          x="36" y="55"
+          font-family="-apple-system, 'Segoe UI', system-ui, sans-serif"
+          font-weight="900"
+          font-size="42"
+          text-anchor="middle"
+          fill="rgba(236,226,208,0.96)"
+          stroke="#09090b"
+          stroke-width="3"
+          paint-order="stroke fill"
+        >R</text>
+
+        <!-- Subtle outer ring -->
+        <rect x="0.5" y="0.5" width="71" height="71" rx="12.5"
+              fill="none" stroke="rgba(255,86,0,0.18)" stroke-width="1"/>
+      </svg>
+
+      <!-- Wordmark -->
+      <h1 class="logo-wordmark">Raider&thinsp;Portal</h1>
+
+      <!-- Tagline -->
+      <p class="logo-tagline">ARC Raiders Game Database</p>
+
+    </header><!-- /.logo-group -->
+
+
+    <!-- ── Search group ──────────────────────────────────── -->
+    <div class="search-group" role="search">
+
+      <!-- Wrapper gives the dropdown an anchor point directly below the bar -->
+      <div class="search-bar-wrap">
+
+      <div class="searchbar" id="searchBar">
+
+        <!-- Category selector -->
+        <div class="search-cat">
+          <select id="searchCategory" aria-label="Search category">
+            <option value="all">All</option>
+            <option value="items">Items</option>
+            <option value="arcs">ARCs</option>
+            <option value="quests">Quests</option>
+            <option value="traders">Traders</option>
+            <option value="events">Events</option>
+          </select>
+        </div>
+
+        <!-- Vertical rule -->
+        <div class="search-rule" aria-hidden="true"></div>
+
+        <!-- Text input -->
+        <input
+          class="search-input"
+          id="searchInput"
+          type="search"
+          placeholder="Search items, ARCs, quests, traders…"
+          autocomplete="off"
+          autocorrect="off"
+          spellcheck="false"
+          aria-label="Search RaiderPortal"
+        />
+
+        <!-- Keyboard shortcut hint — hidden on focus via CSS -->
+        <div class="search-hint" aria-hidden="true">
+          <kbd>/</kbd>
+        </div>
+
+        <!-- Search button -->
+        <button class="search-btn" type="button" aria-label="Submit search">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
+          Search
+        </button>
+
+      </div><!-- /.searchbar -->
+      <!-- Dropdown and loading bar injected here by JS -->
+
+      </div><!-- /.search-bar-wrap -->
+
+      <!-- Browse categories -->
+      <nav class="browse-links" aria-label="Browse by category">
+        <span class="browse-label">Browse</span>
+
+        <a class="browse-link" href="#">Items</a>
+        <span class="browse-sep" aria-hidden="true">·</span>
+        <a class="browse-link" href="#">ARCs</a>
+        <span class="browse-sep" aria-hidden="true">·</span>
+        <a class="browse-link" href="#">Quests</a>
+        <span class="browse-sep" aria-hidden="true">·</span>
+        <a class="browse-link" href="#">Traders</a>
+        <span class="browse-sep" aria-hidden="true">·</span>
+        <a class="browse-link" href="#">Events</a>
+        <span class="browse-sep" aria-hidden="true">·</span>
+        <a class="browse-link" href="#">Tier List</a>
+        <span class="browse-sep" aria-hidden="true">·</span>
+        <a class="browse-link" href="#">Maps</a>
+      </nav>
+
+    </div><!-- /.search-group -->
+
+  </main><!-- /.landing -->
+
+
+  <!-- ═══════════════════════════════════════════════════════════
+       DETAIL VIEW — shown by router when a hash route matches.
+       Initially hidden; router swaps it with .landing on navigation.
+  ═══════════════════════════════════════════════════════════ -->
+  <div id="detailView" class="detail-view" hidden>
+    <div class="detail-container">
+      <div id="detailContent"></div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════
+       FOOTER
+  ═══════════════════════════════════════════════════════════ -->
+  <footer class="site-footer" role="contentinfo">
+    <span class="site-footer-item">© 2026 RaiderPortal</span>
+    <span class="footer-dot" aria-hidden="true">◆</span>
+    <span class="site-footer-item">
+      Data from <a href="https://metaforge.app/arc-raiders" target="_blank" rel="noopener">MetaForge</a>
+    </span>
+    <span class="footer-dot" aria-hidden="true">◆</span>
+    <span class="site-footer-item">Fan project — not affiliated with Embark Studios</span>
+  </footer>
+
+
+  <script type="module">
+    import { buildIndex, search } from './src/services/searchIndex.js';
+    import { initRouter }         from './src/router.js';
+
+    // ─── DOM refs ──────────────────────────────────────────────
+    const searchInput    = document.getElementById('searchInput');
+    const searchBarEl    = document.getElementById('searchBar');
+    const categorySelect = document.getElementById('searchCategory');
+    const searchWrap     = document.querySelector('.search-bar-wrap');
+
+    // ─── Loading bar (child of .searchbar — clipped by its overflow:hidden) ──
+    const loadingBar = document.createElement('div');
+    loadingBar.className = 'search-loading-bar';
+    searchBarEl.appendChild(loadingBar);
+
+    // ─── Dropdown (sibling of .searchbar, anchored by .search-bar-wrap) ──
+    const dropdown = document.createElement('div');
+    dropdown.className = 'search-dropdown';
+    dropdown.setAttribute('role', 'listbox');
+    dropdown.setAttribute('aria-label', 'Search results');
+    searchWrap.appendChild(dropdown);
+
+    // ─── Category select → index type ──────────────────────────
+    const CATEGORY_TYPE = {
+      all:     undefined,
+      items:   'item',
+      arcs:    'arc',
+      quests:  'quest',
+      traders: 'trader',
+      // 'events' intentionally omitted — not yet in the search index
+    };
+
+    // ─── Route helper ───────────────────────────────────────────
+    function routeFor(entry) {
+      return `#/${entry.type}/${encodeURIComponent(entry.id)}`;
+    }
+
+    // ─── Placeholder icon SVGs (one per type) ───────────────────
+    const TYPE_COLORS = {
+      item:   '#00e5ff',
+      arc:    '#ff5600',
+      quest:  '#ffcc00',
+      trader: '#00b87a',
+    };
+
+    const TYPE_SVG_PATHS = {
+      item:   '<path d="M12 2L2 7v5c0 5.5 3.8 10.7 9 12.2C16.2 22.7 20 17.5 20 12V7L12 2z" stroke-width="1.5" stroke="currentColor" fill="none"/>',
+      arc:    '<polygon points="12,2 22,20 2,20" stroke-width="1.5" stroke="currentColor" fill="none"/><line x1="12" y1="8" x2="12" y2="13" stroke-width="1.5" stroke="currentColor"/><circle cx="12" cy="16" r="1" fill="currentColor"/>',
+      quest:  '<rect x="5" y="3" width="14" height="18" rx="2" stroke-width="1.5" stroke="currentColor" fill="none"/><path d="M9 8h6M9 12h6M9 16h4" stroke-width="1.5" stroke="currentColor"/>',
+      trader: '<circle cx="12" cy="8" r="3.5" stroke-width="1.5" stroke="currentColor" fill="none"/><path d="M5 20c0-3.9 3.1-7 7-7s7 3.1 7 7" stroke-width="1.5" stroke="currentColor" fill="none"/>',
+    };
+
+    const TYPE_LABELS = { item: 'Item', arc: 'ARC', quest: 'Quest', trader: 'Trader' };
+
+    function makePlaceholder(type) {
+      const el = document.createElement('div');
+      el.className = 'sr-icon-placeholder';
+      el.style.color = TYPE_COLORS[type] ?? 'var(--text-muted)';
+      el.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+        xmlns="http://www.w3.org/2000/svg">${TYPE_SVG_PATHS[type] ?? ''}</svg>`;
+      return el;
+    }
+
+    // ─── Build a single result row element ──────────────────────
+    function buildRow(entry) {
+      const a = document.createElement('a');
+      a.className = 'search-result';
+      a.href = routeFor(entry);
+
+      // Icon — use image if available, fall back to type-specific placeholder
+      if (entry.icon) {
+        const img = document.createElement('img');
+        img.className = 'sr-icon';
+        img.src = entry.icon;
+        img.alt = '';
+        img.loading = 'lazy';
+        img.onerror = () => img.replaceWith(makePlaceholder(entry.type));
+        a.appendChild(img);
+      } else {
+        a.appendChild(makePlaceholder(entry.type));
+      }
+
+      // Name
+      const nameEl = document.createElement('span');
+      nameEl.className = 'sr-name';
+      nameEl.textContent = entry.name;
+      a.appendChild(nameEl);
+
+      // Type badge
+      const badge = document.createElement('span');
+      badge.className = `type-badge ${entry.type}`;
+      badge.textContent = TYPE_LABELS[entry.type] ?? entry.type;
+      a.appendChild(badge);
+
+      return a;
+    }
+
+    // ─── Dropdown state ─────────────────────────────────────────
+    let activeIdx      = -1;
+    let currentResults = [];
+
+    function openDropdown(results) {
+      currentResults = results;
+      activeIdx = -1;
+      dropdown.innerHTML = '';
+
+      if (results.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'search-no-results';
+        empty.textContent = 'No results found.';
+        dropdown.appendChild(empty);
+      } else {
+        results.forEach((entry) => dropdown.appendChild(buildRow(entry)));
+      }
+
+      dropdown.classList.add('open');
+    }
+
+    function closeDropdown() {
+      dropdown.classList.remove('open');
+      activeIdx = -1;
+    }
+
+    function setActive(idx) {
+      const rows = dropdown.querySelectorAll('.search-result');
+      rows.forEach((r, i) => r.classList.toggle('active', i === idx));
+      activeIdx = idx;
+      if (idx >= 0) rows[idx]?.scrollIntoView({ block: 'nearest' });
+    }
+
+    // ─── Search logic ───────────────────────────────────────────
+    function runSearch() {
+      const q = searchInput.value.trim();
+      if (q.length < 2) { closeDropdown(); return; }
+
+      // Events are not yet in the search index
+      if (categorySelect.value === 'events') { closeDropdown(); return; }
+
+      const type    = CATEGORY_TYPE[categorySelect.value];
+      const results = search(q, { limit: 20, type });
+      openDropdown(results);
+    }
+
+    let debounceTimer;
+    function scheduleSearch() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(runSearch, 150);
+    }
+
+    // ─── Input listeners ────────────────────────────────────────
+    searchInput.addEventListener('input', scheduleSearch);
+    categorySelect.addEventListener('change', scheduleSearch);
+
+    // ─── Keyboard navigation inside the dropdown ────────────────
+    searchInput.addEventListener('keydown', (e) => {
+      const isOpen = dropdown.classList.contains('open');
+
+      if (e.key === 'ArrowDown') {
+        if (!isOpen) return;
+        e.preventDefault();
+        setActive(Math.min(activeIdx + 1, currentResults.length - 1));
+
+      } else if (e.key === 'ArrowUp') {
+        if (!isOpen) return;
+        e.preventDefault();
+        setActive(Math.max(activeIdx - 1, 0));
+
+      } else if (e.key === 'Enter') {
+        if (isOpen && activeIdx >= 0) {
+          e.preventDefault();
+          window.location.hash = routeFor(currentResults[activeIdx]);
+          closeDropdown();
+          searchInput.blur();
+        } else {
+          // No highlighted row — treat Enter as a normal search
+          runSearch();
+        }
+
+      } else if (e.key === 'Escape') {
+        closeDropdown();
+        searchInput.blur();
+      }
+    });
+
+    // ─── Close on click outside the search bar wrap ─────────────
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.search-bar-wrap')) closeDropdown();
+    });
+
+    // Close (and let the href navigate) when a result is clicked
+    dropdown.addEventListener('click', () => {
+      closeDropdown();
+      searchInput.blur();
+    });
+
+    // ─── "/" shortcut — focus the search input ──────────────────
+    document.addEventListener('keydown', (e) => {
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if (e.key === '/') {
+        e.preventDefault();
+        searchInput.focus();
+      }
+    });
+
+    // ─── Start the hash router ──────────────────────────────────
+    // This runs immediately so direct-URL visits (e.g. #/item/barricade-kit)
+    // work without waiting for the search index to finish loading.
+    initRouter();
+
+    // ─── Kick off index build on page load ──────────────────────
+    loadingBar.classList.add('active');
+
+    buildIndex()
+      .then(() => {
+        loadingBar.classList.remove('active');
+        // If the user typed before the index was ready, run the search now
+        if (searchInput.value.trim().length >= 2) runSearch();
+      })
+      .catch((err) => {
+        loadingBar.classList.remove('active');
+        console.error('[RaiderPortal] Search index build failed:', err);
+      });
+  </script>
+
+</body>
+</html>

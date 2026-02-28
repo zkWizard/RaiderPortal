@@ -1,0 +1,526 @@
+/* ═══════════════════════════════════════════════════════════════════
+   DETAIL VIEW SHELL
+   ═══════════════════════════════════════════════════════════════════ */
+
+.detail-view {
+  flex: 1;
+  padding-top: var(--topnav-h);
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+}
+
+.detail-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 36px 28px 80px;
+}
+
+/* ── Breadcrumb ─────────────────────────────────────────── */
+.detail-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 28px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.bc-link {
+  color: var(--text-secondary);
+  transition: color 0.12s;
+}
+
+.bc-link:hover { color: var(--orange); }
+
+.bc-sep { color: var(--text-muted); }
+
+.bc-cat { color: var(--text-secondary); }
+
+.bc-current { color: var(--cream); }
+
+/* ── Loading & error states ─────────────────────────────── */
+.detail-loading,
+.detail-error,
+.detail-not-found {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 80px 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.detail-error { color: var(--red); }
+
+.dl-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-bright);
+  border-top-color: var(--orange);
+  border-radius: 50%;
+  animation: dlSpin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes dlSpin { to { transform: rotate(360deg); } }
+
+/* ═══════════════════════════════════════════════════════════════════
+   HERO — shared across all page types
+   ═══════════════════════════════════════════════════════════════════ */
+
+.detail-hero {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 36px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--border);
+}
+
+.hero-icon-wrap { flex-shrink: 0; }
+
+.hero-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: var(--bg-base);
+  border: 1px solid var(--border-bright);
+  display: block;
+}
+
+.hero-icon-placeholder {
+  width: 80px;
+  height: 80px;
+  border-radius: 10px;
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  color: var(--text-muted);
+}
+
+.hero-meta { flex: 1; min-width: 0; }
+
+.hero-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+/* Entity-type badge (same as search dropdown) */
+.hero-badge {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 3px;
+  border: 1px solid transparent;
+}
+
+.hero-badge.item   { color: var(--cyan);  background: rgba(0,229,255,0.08); border-color: rgba(0,229,255,0.20); }
+.hero-badge.arc    { color: var(--orange); background: rgba(255,86,0,0.08);  border-color: rgba(255,86,0,0.22); }
+.hero-badge.quest  { color: var(--yellow); background: rgba(255,204,0,0.08); border-color: rgba(255,204,0,0.20); }
+.hero-badge.trader { color: #00b87a;       background: rgba(0,184,122,0.08); border-color: rgba(0,184,122,0.20); }
+
+/* Rarity inline text colour */
+.rarity-common    { color: #9d9d9d; }
+.rarity-uncommon  { color: #00b87a; }
+.rarity-rare      { color: #4a9eff; }
+.rarity-epic      { color: #a855f7; }
+.rarity-legendary { color: var(--yellow); }
+
+.hero-name {
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1.1;
+  color: var(--cream);
+  margin-bottom: 8px;
+  letter-spacing: 0.01em;
+}
+
+.hero-sub {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   BODY LAYOUTS
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Two-column layout (items) */
+.detail-body {
+  display: grid;
+  grid-template-columns: 1fr 268px;
+  gap: 32px;
+  align-items: start;
+}
+
+@media (max-width: 740px) {
+  .detail-body { grid-template-columns: 1fr; }
+}
+
+.detail-main    { min-width: 0; }
+.detail-sidebar { min-width: 0; }
+
+/* Single-column layout (quests, arcs, traders) */
+.detail-full { max-width: 780px; }
+
+/* ── Sections ────────────────────────────────────────────── */
+.detail-section { margin-bottom: 32px; }
+.detail-section:last-child { margin-bottom: 0; }
+
+.section-title {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── Sidebar cards ───────────────────────────────────────── */
+.info-card {
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.info-card:last-child { margin-bottom: 0; }
+
+.info-card-title {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.kv-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 5px 0;
+  font-size: 12px;
+  border-bottom: 1px solid rgba(42,45,54,0.5);
+}
+
+.kv-row:last-child { border-bottom: none; }
+.kv-key { color: var(--text-muted); font-weight: 500; flex-shrink: 0; }
+.kv-val { color: var(--cream); font-weight: 600; text-align: right; }
+
+/* ── Prose content ───────────────────────────────────────── */
+.detail-description {
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--cream);
+}
+
+.detail-flavor {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  font-style: italic;
+  border-left: 2px solid var(--border-bright);
+  padding-left: 14px;
+}
+
+/* ── Stat grid (items) ───────────────────────────────────── */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 6px;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 7px 10px;
+  font-size: 12px;
+}
+
+.stat-name { color: var(--text-muted); font-weight: 500; }
+.stat-val  { color: var(--cream); font-weight: 700; }
+
+/* ── Tags (loot areas, etc.) ─────────────────────────────── */
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+}
+
+.tag-gray   { background: var(--bg-base); border: 1px solid var(--border); color: var(--text-secondary); }
+.tag-orange { background: rgba(255,86,0,0.08); border: 1px solid rgba(255,86,0,0.22); color: var(--orange); }
+.tag-cyan   { background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.20); color: var(--cyan); }
+
+/* ── Entity list rows (rewards, inventory, loot table) ───── */
+.entity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.entity-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 7px;
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  transition: background 0.08s, border-color 0.08s;
+  color: var(--cream);
+}
+
+.entity-row:hover { background: rgba(255,86,0,0.06); border-color: var(--border-bright); }
+
+.er-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 5px;
+  object-fit: cover;
+  background: var(--bg-void);
+  flex-shrink: 0;
+}
+
+.er-icon-ph {
+  width: 36px;
+  height: 36px;
+  border-radius: 5px;
+  background: var(--bg-void);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  font-size: 14px;
+}
+
+.er-info { flex: 1; min-width: 0; }
+
+.er-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cream);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.er-name a {
+  color: inherit;
+  transition: color 0.12s;
+}
+
+.er-name a:hover { color: var(--orange); }
+
+.er-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.er-badge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.er-qty {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.er-price {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--yellow);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* ── Objectives list (quests) ────────────────────────────── */
+.objective-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.objective-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--cream);
+  line-height: 1.55;
+}
+
+.objective-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--orange);
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
+/* ── Trader "Sold By" rows ───────────────────────────────── */
+.sold-by-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  font-size: 13px;
+  border-bottom: 1px solid rgba(42,45,54,0.5);
+}
+
+.sold-by-row:last-child { border-bottom: none; }
+
+.sold-by-row a {
+  color: #00b87a;
+  font-weight: 600;
+  transition: color 0.12s;
+}
+
+.sold-by-row a:hover { color: var(--cream); }
+
+.sold-by-price {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--yellow);
+}
+
+/* ── Guide links ─────────────────────────────────────────── */
+.guide-links-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.guide-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cyan);
+  padding: 5px 0;
+  transition: color 0.12s;
+}
+
+.guide-link:hover { color: var(--cream); }
+
+/* ── ARC / Quest artwork image ───────────────────────────── */
+.detail-artwork {
+  width: 100%;
+  max-height: 300px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  display: block;
+  margin-bottom: 28px;
+}
+
+/* ── Issued-by row (quests) ──────────────────────────────── */
+.issued-by {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+
+.issued-by a {
+  color: #00b87a;
+  font-weight: 600;
+  transition: color 0.12s;
+}
+
+.issued-by a:hover { color: var(--cream); }
+
+/* ── XP badge ────────────────────────────────────────────── */
+.xp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cyan);
+  padding: 6px 14px;
+  background: rgba(0,229,255,0.07);
+  border: 1px solid rgba(0,229,255,0.18);
+  border-radius: 6px;
+}
+
+/* ── Crafted-at row ──────────────────────────────────────── */
+.crafted-at {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--cream);
+  padding: 8px 14px;
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.crafted-at-label { color: var(--text-muted); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* ── Empty state ─────────────────────────────────────────── */
+.empty-note {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 10px 0;
+}
+
+/* ── Trader inventory header ─────────────────────────────── */
+.inventory-header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.inventory-count {
+  font-size: 12px;
+  color: var(--text-muted);
+}
