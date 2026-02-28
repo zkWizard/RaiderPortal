@@ -611,7 +611,7 @@
       background: #191b22;
       border: 1px solid var(--border-bright);
       border-radius: 10px;
-      max-height: 440px;
+      max-height: 400px;
       overflow-y: auto;
       z-index: 50;
       box-shadow:
@@ -635,8 +635,8 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 0 16px;
-      height: 44px;
+      padding: 0 14px;
+      height: 48px;
       cursor: pointer;
       color: var(--text-primary);
       border-bottom: 1px solid rgba(42, 45, 54, 0.55);
@@ -650,10 +650,10 @@
       background: rgba(255, 86, 0, 0.08);
     }
 
-    /* Icon thumbnail */
+    /* Icon thumbnail — 32×32 per spec */
     .sr-icon {
-      width: 28px;
-      height: 28px;
+      width: 32px;
+      height: 32px;
       border-radius: 4px;
       object-fit: cover;
       flex-shrink: 0;
@@ -662,8 +662,8 @@
 
     /* Placeholder when no icon is available */
     .sr-icon-placeholder {
-      width: 28px;
-      height: 28px;
+      width: 32px;
+      height: 32px;
       border-radius: 4px;
       flex-shrink: 0;
       background: var(--bg-base);
@@ -673,15 +673,32 @@
       justify-content: center;
     }
 
+    /* Name + meta stacked in a column */
+    .sr-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;
+      gap: 1px;
+    }
+
     /* Entry name */
     .sr-name {
-      flex: 1;
       font-size: 13px;
       font-weight: 500;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      min-width: 0;
+    }
+
+    /* Subtype · Rarity secondary line */
+    .sr-meta {
+      font-size: 10px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     /* Type badge pill */
@@ -697,12 +714,13 @@
       line-height: 1.5;
     }
 
+    /* blue=Item, orange=ARC, green=Quest, purple=Trader */
     .type-badge.item   { color: var(--cyan);  background: rgba(0,  229, 255, 0.08); border-color: rgba(0,  229, 255, 0.20); }
     .type-badge.arc    { color: var(--orange); background: rgba(255,  86,   0, 0.08); border-color: rgba(255,  86,   0, 0.22); }
-    .type-badge.quest  { color: var(--yellow); background: rgba(255, 204,   0, 0.08); border-color: rgba(255, 204,   0, 0.20); }
-    .type-badge.trader { color: #00b87a;       background: rgba(0,  184, 122, 0.08); border-color: rgba(0,  184, 122, 0.20); }
+    .type-badge.quest  { color: #00b87a;       background: rgba(0,  184, 122, 0.08); border-color: rgba(0,  184, 122, 0.22); }
+    .type-badge.trader { color: #a855f7;       background: rgba(168, 85,  247, 0.08); border-color: rgba(168, 85,  247, 0.22); }
 
-    /* Empty / no-results state */
+    /* Empty / no-results / loading state */
     .search-no-results {
       padding: 28px 20px;
       text-align: center;
@@ -935,7 +953,7 @@
 
 
   <script type="module">
-    import { buildIndex, search } from './src/services/searchIndex.js';
+    import { buildIndex, search, getIndexState } from './src/services/searchIndex.js';
     import { initRouter }         from './src/router.js';
 
     // ─── DOM refs ──────────────────────────────────────────────
@@ -1008,7 +1026,7 @@
       a.className = 'search-result';
       a.href = routeFor(entry);
 
-      // Icon — use image if available, fall back to type-specific placeholder
+      // Icon — 32×32; fall back to type-specific placeholder on error or absence
       if (entry.icon) {
         const img = document.createElement('img');
         img.className = 'sr-icon';
@@ -1021,13 +1039,27 @@
         a.appendChild(makePlaceholder(entry.type));
       }
 
-      // Name
+      // Body — name + meta stacked
+      const body = document.createElement('div');
+      body.className = 'sr-body';
+
       const nameEl = document.createElement('span');
       nameEl.className = 'sr-name';
       nameEl.textContent = entry.name;
-      a.appendChild(nameEl);
+      body.appendChild(nameEl);
 
-      // Type badge — CSS class uses lowercase key; label uses the TYPE_LABELS map
+      // Secondary line: subtype · rarity (omit empty parts)
+      const metaParts = [entry.subtype, entry.rarity].filter(Boolean);
+      if (metaParts.length) {
+        const meta = document.createElement('span');
+        meta.className = 'sr-meta';
+        meta.textContent = metaParts.join(' · ');
+        body.appendChild(meta);
+      }
+
+      a.appendChild(body);
+
+      // Type badge — CSS class uses lowercase key
       const badge = document.createElement('span');
       const typeKey = entry.type.toLowerCase();
       badge.className = `type-badge ${typeKey}`;
@@ -1041,20 +1073,26 @@
     let activeIdx      = -1;
     let currentResults = [];
 
-    function openDropdown(results) {
+    function showDropdownMessage(text) {
+      dropdown.innerHTML = '';
+      const el = document.createElement('div');
+      el.className = 'search-no-results';
+      el.textContent = text;
+      dropdown.appendChild(el);
+      dropdown.classList.add('open');
+    }
+
+    function openDropdown(results, query) {
       currentResults = results;
       activeIdx = -1;
       dropdown.innerHTML = '';
 
       if (results.length === 0) {
-        const empty = document.createElement('div');
-        empty.className = 'search-no-results';
-        empty.textContent = 'No results found.';
-        dropdown.appendChild(empty);
-      } else {
-        results.forEach((entry) => dropdown.appendChild(buildRow(entry)));
+        showDropdownMessage(`No results found for "${query}"`);
+        return;
       }
 
+      results.forEach((entry) => dropdown.appendChild(buildRow(entry)));
       dropdown.classList.add('open');
     }
 
@@ -1078,9 +1116,16 @@
       // Events are not yet in the search index
       if (categorySelect.value === 'events') { closeDropdown(); return; }
 
+      // Show loading message if the index isn't ready yet
+      const { state } = getIndexState();
+      if (state !== 'ready') {
+        showDropdownMessage('Loading game database…');
+        return;
+      }
+
       const type    = CATEGORY_TYPE[categorySelect.value];
-      const results = search(q, { limit: 20, type });
-      openDropdown(results);
+      const results = search(q, { limit: 25, type });
+      openDropdown(results, q);
     }
 
     let debounceTimer;
