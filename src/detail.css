@@ -620,3 +620,154 @@ body.no-transition .detail-view  { transition: none !important; }
   border-color: rgba(255,86,0,0.5);
   color: var(--orange);
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   PAGE TYPE THEMES
+   Custom properties scoped to page-type wrapper classes.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.page-item   { --page-accent: #ff5600; --page-glow: rgba(255,86,0,0.12);   --banner-bg: url('https://cdn.metaforge.app/arc-raiders/ui/item.webp'); }
+.page-arc    { --page-accent: #00e5ff; --page-glow: rgba(0,229,255,0.12);  --banner-bg: url('https://cdn.metaforge.app/arc-raiders/ui/arcs.webp'); }
+.page-quest  { --page-accent: #00b87a; --page-glow: rgba(0,184,122,0.12); --banner-bg: url('https://cdn.metaforge.app/arc-raiders/ui/quests.webp'); }
+.page-trader { --page-accent: #a855f7; --page-glow: rgba(168,85,247,0.12); --banner-bg: url('https://cdn.metaforge.app/arc-raiders/ui/traders.webp'); }
+
+/* Item subcategory accent overrides */
+.page-item.sub-blueprint,
+.page-item.sub-recipe     { --page-accent: #f5a623; --page-glow: rgba(245,166,35,0.12); }
+.page-item.sub-armor      { --page-accent: #4a9eff; --page-glow: rgba(74,158,255,0.12); }
+.page-item.sub-grenade    { --page-accent: #ff3b3b; --page-glow: rgba(255,59,59,0.12); }
+.page-item.sub-consumable { --page-accent: #00b87a; --page-glow: rgba(0,184,122,0.12); }
+.page-item.sub-mod,
+.page-item.sub-material   { --page-accent: #7ab8d4; --page-glow: rgba(122,184,212,0.12); }
+.page-item.sub-key        { --page-accent: #f5a623; --page-glow: rgba(245,166,35,0.12); }
+
+/* ═══════════════════════════════════════════════════════════════════
+   DETAIL BANNER — full-bleed hero area at the top of each detail page
+   ═══════════════════════════════════════════════════════════════════ */
+
+.detail-banner {
+  position: relative;
+  margin: -36px -28px 32px;
+  padding: 36px 28px 28px;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-bottom: 2px solid var(--page-accent, var(--border-bright));
+  overflow: hidden;
+}
+
+/* Background image layer — darkened & desaturated for legibility */
+.detail-banner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--banner-bg);
+  background-size: cover;
+  background-position: center;
+  filter: brightness(0.22) saturate(0.35);
+  z-index: 0;
+}
+
+/* Radial glow + vertical gradient overlay */
+.detail-banner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 100% at 80% 50%, var(--page-glow, transparent) 0%, transparent 70%),
+    linear-gradient(to bottom, transparent 40%, var(--bg-void) 100%);
+  z-index: 0;
+}
+
+/* Direct children sit above the pseudo-element layers */
+.detail-banner > * { position: relative; z-index: 1; }
+
+/* Breadcrumb: remove bottom margin inside banner */
+.detail-banner .detail-breadcrumb { margin-bottom: 0; }
+
+/* Hero in banner: no bottom border (banner border replaces it) */
+.detail-banner .detail-hero {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+/* Larger, accent-framed icon inside the banner */
+.detail-banner .hero-icon {
+  width: 96px;
+  height: 96px;
+  border: 2px solid var(--page-accent, var(--border-bright));
+  box-shadow: 0 0 20px var(--page-glow, transparent);
+}
+
+.detail-banner .hero-icon-placeholder {
+  width: 96px;
+  height: 96px;
+  border: 2px solid var(--page-accent, var(--border-bright));
+}
+
+/* Unified header inside banner: no bottom border or extra spacing */
+.detail-banner .unified-header {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   ACCENT-DRIVEN ELEMENT OVERRIDES
+   Higher specificity so they override the defaults above.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.page-item .section-title,
+.page-arc  .section-title,
+.page-quest .section-title,
+.page-trader .section-title { color: var(--page-accent, var(--text-muted)); }
+
+.page-item .bc-cat,
+.page-arc  .bc-cat,
+.page-quest .bc-cat,
+.page-trader .bc-cat { color: var(--page-accent, var(--text-secondary)); }
+
+.page-item .bc-link:hover,
+.page-arc  .bc-link:hover,
+.page-quest .bc-link:hover,
+.page-trader .bc-link:hover { color: var(--page-accent, var(--orange)); }
+
+.page-item .entity-row:hover,
+.page-arc  .entity-row:hover,
+.page-quest .entity-row:hover,
+.page-trader .entity-row:hover { background: var(--page-glow, rgba(255,86,0,0.06)); }
+
+.page-item .tier-tab:hover,
+.page-arc  .tier-tab:hover,
+.page-quest .tier-tab:hover,
+.page-trader .tier-tab:hover {
+  background: var(--page-glow, rgba(255,86,0,0.08));
+  border-color: var(--page-accent, rgba(255,86,0,0.4));
+  color: var(--page-accent, var(--orange));
+}
+
+.page-item .tier-tab.active,
+.page-arc  .tier-tab.active,
+.page-quest .tier-tab.active,
+.page-trader .tier-tab.active {
+  background: var(--page-glow, rgba(255,86,0,0.12));
+  border-color: var(--page-accent, rgba(255,86,0,0.5));
+  color: var(--page-accent, var(--orange));
+}
+
+.page-item .objective-dot,
+.page-arc  .objective-dot,
+.page-quest .objective-dot,
+.page-trader .objective-dot { background: var(--page-accent, var(--orange)); }
+
+.page-item .detail-flavor,
+.page-arc  .detail-flavor,
+.page-quest .detail-flavor,
+.page-trader .detail-flavor { border-left-color: var(--page-accent, var(--border-bright)); }
+
+.page-item .er-name a:hover,
+.page-arc  .er-name a:hover,
+.page-quest .er-name a:hover,
+.page-trader .er-name a:hover { color: var(--page-accent, var(--orange)); }

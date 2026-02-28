@@ -113,12 +113,6 @@ export async function renderQuest(id, container) {
       </div>
     </div>`;
 
-  // Full-width artwork (if available — quests have a high-res image)
-  const artwork = quest.image
-    ? `<img class="detail-artwork" src="${esc(quest.image)}" alt="${esc(quest.name)} quest artwork" loading="lazy"
-            onerror="this.remove()">`
-    : '';
-
   // Objectives
   const objectiveDots = (quest.objectives ?? []).map((obj) => `
     <li class="objective-item">
@@ -169,14 +163,17 @@ export async function renderQuest(id, container) {
     </div>` : '';
 
   container.innerHTML = `
-    ${breadcrumb}
-    ${hero}
-    <div class="detail-full">
-      ${artwork}
-      ${objectivesSection}
-      ${grantedSection}
-      ${requiredSection}
-      ${rewardsSection}
-      ${guideSection}
+    <div class="page-quest">
+      <div class="detail-banner"${quest.image ? ` style="--banner-bg: url('${esc(quest.image)}')"` : ''}>
+        ${breadcrumb}
+        ${hero}
+      </div>
+      <div class="detail-full">
+        ${objectivesSection}
+        ${grantedSection}
+        ${requiredSection}
+        ${rewardsSection}
+        ${guideSection}
+      </div>
     </div>`;
 }
