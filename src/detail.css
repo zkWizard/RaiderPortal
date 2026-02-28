@@ -1535,104 +1535,97 @@ body.no-transition .detail-view  { transition: none !important; }
    LOCATIONS SECTION
    ═══════════════════════════════════════════════════════════════════ */
 
-/* Filter pills */
-.loc-filter-bar {
+/* Tier 3 — no data */
+.loc-no-data {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-style: italic;
+  margin: 0;
+}
+
+/* Labelled row (Found In / Maps) */
+.loc-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.loc-row + .loc-row { margin-top: 10px; }
+
+.loc-row-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+  padding-top: 3px;
+  min-width: 60px;
+}
+
+.loc-badge-group {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-bottom: 16px;
 }
 
-.loc-pill {
-  padding: 4px 13px;
-  border-radius: 20px;
+/* ── Zone-type badges (Tier 1) ──────────────────────────────── */
+.loc-zone-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 4px;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.04em;
-  border: 1px solid var(--border-bright);
-  background: transparent;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  border: 1px solid transparent;
 }
 
-.loc-pill:hover {
-  background: var(--bg-elevated);
-  color: var(--cream);
-}
+/* Default / fallback */
+.loc-zone-badge.zone-default    { background: rgba(255,255,255,0.06); color: var(--text-secondary); border-color: var(--border-bright); }
 
-.loc-pill.active {
-  background: var(--orange);
-  border-color: var(--orange);
-  color: #fff;
-}
+/* Named zone colours */
+.loc-zone-badge.zone-arc          { background: rgba(255,86,0,0.15);   color: #ff8040; border-color: rgba(255,86,0,0.3); }
+.loc-zone-badge.zone-exodus       { background: rgba(160,80,220,0.15); color: #c088f0; border-color: rgba(160,80,220,0.3); }
+.loc-zone-badge.zone-residential  { background: rgba(0,180,140,0.12);  color: #40c8a8; border-color: rgba(0,180,140,0.3); }
+.loc-zone-badge.zone-commercial   { background: rgba(60,120,220,0.12); color: #6090e0; border-color: rgba(60,120,220,0.3); }
+.loc-zone-badge.zone-industrial   { background: rgba(130,130,140,0.12);color: #a0a0b0; border-color: rgba(130,130,140,0.3); }
+.loc-zone-badge.zone-security     { background: rgba(200,30,50,0.12);  color: #e06070; border-color: rgba(200,30,50,0.3); }
+.loc-zone-badge.zone-mechanical   { background: rgba(220,160,0,0.12);  color: #e0c040; border-color: rgba(220,160,0,0.3); }
+.loc-zone-badge.zone-medical      { background: rgba(0,184,120,0.12);  color: #40d090; border-color: rgba(0,184,120,0.3); }
+.loc-zone-badge.zone-electrical   { background: rgba(0,220,255,0.10);  color: #40d8f0; border-color: rgba(0,220,255,0.25); }
+.loc-zone-badge.zone-tech         { background: rgba(80,140,255,0.12); color: #80a8ff; border-color: rgba(80,140,255,0.3); }
+.loc-zone-badge.zone-nature       { background: rgba(80,180,60,0.12);  color: #70c860; border-color: rgba(80,180,60,0.3); }
+.loc-zone-badge.zone-oldworld     { background: rgba(200,150,60,0.12); color: #d0a858; border-color: rgba(200,150,60,0.3); }
+.loc-zone-badge.zone-raider       { background: rgba(220,60,60,0.12);  color: #e07070; border-color: rgba(220,60,60,0.3); }
 
-/* Map card grid */
-.loc-maps-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-}
-
-.loc-map-card {
-  border: 1px solid var(--border-subtle);
-  border-radius: 10px;
-  overflow: hidden;
-  background: var(--bg-card);
-  transition: border-color 0.15s;
-}
-
-.loc-map-card:hover { border-color: var(--border-bright); }
-
-.loc-map-header {
-  padding: 14px 16px 12px;
-  display: flex;
+/* ── Map badges (Tier 2 — Key items) ───────────────────────── */
+.loc-map-badge {
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-  min-height: 58px;
-}
-
-.loc-map-name {
-  font-size: 13px;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 11px;
   font-weight: 700;
-  color: rgba(255,255,255,0.92);
-  letter-spacing: 0.03em;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+  letter-spacing: 0.04em;
+  border: 1px solid transparent;
 }
 
-.loc-map-body {
-  padding: 12px 16px 14px;
-  min-height: 52px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+.loc-map-badge::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.8;
+  flex-shrink: 0;
 }
 
-.loc-empty {
-  font-size: 12px;
-  color: var(--text-muted);
-  font-style: italic;
-}
-
-.loc-spawn {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-}
-
-.loc-notes {
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-/* Responsive */
-@media (max-width: 900px) {
-  .loc-maps-grid { grid-template-columns: repeat(2, 1fr); }
-}
-
-@media (max-width: 560px) {
-  .loc-maps-grid { grid-template-columns: 1fr; }
-  .loc-filter-bar { gap: 5px; }
-  .loc-pill { font-size: 10px; padding: 3px 10px; }
-}
+.loc-map-badge.loc-map--dam           { background: rgba(42,74,90,0.25);  color: #7ab8d0; border-color: rgba(42,74,90,0.5); }
+.loc-map-badge.loc-map--buried-city   { background: rgba(74,50,26,0.25);  color: #d0a868; border-color: rgba(74,50,26,0.5); }
+.loc-map-badge.loc-map--blue-gate     { background: rgba(22,48,96,0.25);  color: #6898e0; border-color: rgba(22,48,96,0.5); }
+.loc-map-badge.loc-map--spaceport     { background: rgba(46,32,80,0.25);  color: #a878e0; border-color: rgba(46,32,80,0.5); }
+.loc-map-badge.loc-map--stella-montis { background: rgba(30,64,48,0.25);  color: #58c890; border-color: rgba(30,64,48,0.5); }

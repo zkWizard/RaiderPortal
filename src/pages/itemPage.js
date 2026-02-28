@@ -153,15 +153,55 @@ function getItemSubClass(item) {
   return ''; // weapons and unknown types use default orange accent
 }
 
-// ─── Map data ─────────────────────────────────────────────────
+// ─── Location data constants ───────────────────────────────────
 
-const MAP_DATA = [
-  { id: 'dam',           label: 'Dam',           grad: 'linear-gradient(135deg,#1a2e3a 0%,#2a4a5a 100%)' },
-  { id: 'spaceport',     label: 'Spaceport',     grad: 'linear-gradient(135deg,#1e1432 0%,#2e2050 100%)' },
-  { id: 'buried-city',   label: 'Buried City',   grad: 'linear-gradient(135deg,#2e1e0e 0%,#4a321a 100%)' },
-  { id: 'blue-gate',     label: 'Blue Gate',     grad: 'linear-gradient(135deg,#0e1e34 0%,#163060 100%)' },
-  { id: 'stella-montis', label: 'Stella Montis', grad: 'linear-gradient(135deg,#142820 0%,#1e4030 100%)' },
+// Zone type → CSS modifier (for loot_area badge colours)
+const ZONE_COLOR = new Map([
+  ['arc',           'zone-arc'],
+  ['exodus',        'zone-exodus'],
+  ['residential',   'zone-residential'],
+  ['commercial',    'zone-commercial'],
+  ['industrial',    'zone-industrial'],
+  ['security',      'zone-security'],
+  ['mechanical',    'zone-mechanical'],
+  ['medical',       'zone-medical'],
+  ['electrical',    'zone-electrical'],
+  ['technological', 'zone-tech'],
+  ['nature',        'zone-nature'],
+  ['old world',     'zone-oldworld'],
+  ['raider',        'zone-raider'],
+]);
+
+// Map slug → display label
+const MAP_LABELS = {
+  'dam':           'Dam',
+  'buried-city':   'Buried City',
+  'blue-gate':     'Blue Gate',
+  'spaceport':     'Spaceport',
+  'stella-montis': 'Stella Montis',
+};
+
+// Map slug → expected item-name prefix (lower-case, with trailing space)
+// Used to discard locations[] entries whose map contradicts the item name.
+const MAP_PREFIXES = [
+  { map: 'dam',           prefix: 'dam ' },
+  { map: 'buried-city',   prefix: 'buried city' },
+  { map: 'blue-gate',     prefix: 'blue gate' },
+  { map: 'spaceport',     prefix: 'spaceport' },
+  { map: 'stella-montis', prefix: 'stella montis' },
 ];
+
+/** Return only the locations[] entries that are consistent with the item name. */
+function getValidLocations(item) {
+  if (!Array.isArray(item.locations) || !item.locations.length) return [];
+  const nameLower = item.name.toLowerCase();
+  const matched = MAP_PREFIXES.find(({ prefix }) => nameLower.startsWith(prefix));
+  // If the item name starts with a known map prefix, keep only matching entries.
+  // Otherwise (e.g. "Patrol Car Key") accept all entries.
+  return matched
+    ? item.locations.filter((loc) => loc.map === matched.map)
+    : item.locations;
+}
 
 // ─── Section builders ──────────────────────────────────────────
 
@@ -232,19 +272,6 @@ function buildCrafting(item) {
     </div>`;
 }
 
-function buildLootAreas(lootArea) {
-  if (!lootArea) return '';
-  const areas = lootArea.split(',').map((s) => s.trim()).filter(Boolean);
-  if (!areas.length) return '';
-
-  const tags = areas.map((a) => `<span class="tag tag-gray">${esc(a)}</span>`).join('');
-  return `
-    <div class="detail-section">
-      <div class="section-title">Found In</div>
-      <div class="tag-row">${tags}</div>
-    </div>`;
-}
-
 function buildGuideLinks(links) {
   if (!links?.length) return '';
   const items = links.map((l) => `
@@ -259,48 +286,54 @@ function buildGuideLinks(links) {
 }
 
 function buildLocationsSection(item) {
-  // Build a map-keyed index from item.locations (always [] currently — future-proofed)
-  const byMap = new Map();
-  if (Array.isArray(item.locations)) {
-    for (const loc of item.locations) {
-      const key = (loc.map ?? '').toLowerCase().replace(/\s+/g, '-');
-      if (!byMap.has(key)) byMap.set(key, []);
-      byMap.get(key).push(loc);
-    }
+  // ── Tier 1: loot_area zone types ──────────────────────────────
+  const zones = item.loot_area
+    ? item.loot_area.split(',').map((s) => s.trim()).filter(Boolean)
+    : [];
+
+  // ── Tier 2: Key items with map-validated locations[] ──────────
+  const validLocs = getValidLocations(item);
+  // De-duplicate map slugs; only show maps we have labels for
+  const mapSlugs = [...new Set(validLocs.map((l) => l.map).filter((m) => MAP_LABELS[m]))];
+
+  // ── Tier 3: no data ───────────────────────────────────────────
+  if (!zones.length && !mapSlugs.length) {
+    return `
+      <div class="detail-section">
+        <div class="section-title">Locations</div>
+        <p class="loc-no-data">Location data coming soon</p>
+      </div>`;
   }
 
-  const pills = [
-    `<button class="loc-pill active" data-map="all">All Maps</button>`,
-    ...MAP_DATA.map((m) =>
-      `<button class="loc-pill" data-map="${m.id}">${esc(m.label)}</button>`),
-  ].join('');
+  let body = '';
 
-  const cards = MAP_DATA.map((m) => {
-    const locs = byMap.get(m.id) ?? [];
-    let bodyHtml;
-    if (locs.length) {
-      bodyHtml = locs.map((loc) => `
-        <div class="loc-spawn">
-          ${loc.area  ? `<span class="tag tag-gray">${esc(loc.area)}</span>`  : ''}
-          ${loc.notes ? `<span class="loc-notes">${esc(loc.notes)}</span>` : ''}
-        </div>`).join('');
-    } else {
-      bodyHtml = `<div class="loc-empty">No location data yet</div>`;
-    }
-    return `
-      <div class="loc-map-card" data-map="${m.id}">
-        <div class="loc-map-header" style="background:${m.grad}">
-          <span class="loc-map-name">${esc(m.label)}</span>
-        </div>
-        <div class="loc-map-body">${bodyHtml}</div>
+  if (zones.length) {
+    const badges = zones.map((z) => {
+      const cls = ZONE_COLOR.get(z.toLowerCase()) ?? 'zone-default';
+      return `<span class="loc-zone-badge ${cls}">${esc(z)}</span>`;
+    }).join('');
+    body += `
+      <div class="loc-row">
+        <span class="loc-row-label">Found In</span>
+        <div class="loc-badge-group">${badges}</div>
       </div>`;
-  }).join('');
+  }
+
+  if (mapSlugs.length) {
+    const badges = mapSlugs.map((slug) =>
+      `<span class="loc-map-badge loc-map--${slug}">${esc(MAP_LABELS[slug])}</span>`
+    ).join('');
+    body += `
+      <div class="loc-row">
+        <span class="loc-row-label">Maps</span>
+        <div class="loc-badge-group">${badges}</div>
+      </div>`;
+  }
 
   return `
-    <div class="detail-section locations-section">
+    <div class="detail-section">
       <div class="section-title">Locations</div>
-      <div class="loc-filter-bar">${pills}</div>
-      <div class="loc-maps-grid">${cards}</div>
+      ${body}
     </div>`;
 }
 
@@ -371,8 +404,6 @@ function buildBody(item, soldBy) {
 
     buildCrafting(item),
 
-    buildLootAreas(item.loot_area),
-
     buildLocationsSection(item),
 
     buildGuideLinks(item.guide_links),
@@ -391,23 +422,6 @@ function buildItemContent(item, soldBy) {
   return `
     ${buildHero(item)}
     ${buildBody(item, soldBy)}`;
-}
-
-// ─── Location filter wiring ────────────────────────────────────
-// Uses event delegation on the container so it covers all tier panels.
-
-function wireLocations(container) {
-  container.addEventListener('click', (e) => {
-    const pill = e.target.closest('.loc-pill');
-    if (!pill) return;
-    const section = pill.closest('.locations-section');
-    if (!section) return;
-    const mapId = pill.dataset.map;
-    for (const p of section.querySelectorAll('.loc-pill'))
-      p.classList.toggle('active', p.dataset.map === mapId);
-    for (const card of section.querySelectorAll('.loc-map-card'))
-      card.style.display = (mapId === 'all' || card.dataset.map === mapId) ? '' : 'none';
-  });
 }
 
 // ─── Main export ───────────────────────────────────────────────
@@ -470,7 +484,6 @@ export async function renderItemGroup(slug, container) {
         </div>
         ${buildBody(item, soldBy)}
       </div>`;
-    wireLocations(container);
     return;
   }
 
@@ -518,6 +531,4 @@ export async function renderItemGroup(slug, container) {
       allPanels.forEach((p, j) => { p.hidden = j !== idx; });
     });
   });
-
-  wireLocations(container);
 }
