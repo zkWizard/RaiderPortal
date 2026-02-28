@@ -134,10 +134,17 @@ function sortItemsByTier(items) {
 // ─── Section builders ──────────────────────────────────────────
 
 function buildIconHtml(item) {
-  if (item.icon) {
+  // Blueprint/Recipe items: the API inconsistently returns the base item icon
+  // for some entries. Always derive the URL from the item's own ID so every
+  // blueprint uses its own CDN asset (e.g. anvil-recipe.webp, not anvil.webp).
+  const isBp = item.item_type === 'Blueprint' || item.item_type === 'Recipe';
+  const iconUrl = isBp
+    ? `https://cdn.metaforge.app/arc-raiders/icons/${item.id}.webp`
+    : item.icon;
+  if (iconUrl) {
     return `
       <div class="hero-icon-wrap">
-        <img class="hero-icon" src="${esc(item.icon)}" alt=""
+        <img class="hero-icon" src="${esc(iconUrl)}" alt=""
              onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
         <div class="hero-icon-placeholder" style="display:none">📦</div>
       </div>`;
