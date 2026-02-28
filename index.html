@@ -959,19 +959,23 @@
     // ─── Category select → index type ──────────────────────────
     const CATEGORY_TYPE = {
       all:     undefined,
-      items:   'item',
-      arcs:    'arc',
-      quests:  'quest',
-      traders: 'trader',
+      items:   'Item',
+      arcs:    'ARC',
+      quests:  'Quest',
+      traders: 'Trader',
       // 'events' intentionally omitted — not yet in the search index
     };
 
     // ─── Route helper ───────────────────────────────────────────
+    // entry.type is capitalized ("Item", "ARC", etc.) but the router
+    // expects lowercase slugs (#/item/:id, #/arc/:id, etc.)
     function routeFor(entry) {
-      return `#/${entry.type}/${encodeURIComponent(entry.id)}`;
+      return `#/${entry.type.toLowerCase()}/${encodeURIComponent(entry.id)}`;
     }
 
     // ─── Placeholder icon SVGs (one per type) ───────────────────
+    // Keys are lowercase for CSS class names and URL routing.
+    // entry.type comes in capitalized ("Item", "ARC", etc.) — use .toLowerCase() to look up.
     const TYPE_COLORS = {
       item:   '#00e5ff',
       arc:    '#ff5600',
@@ -989,11 +993,12 @@
     const TYPE_LABELS = { item: 'Item', arc: 'ARC', quest: 'Quest', trader: 'Trader' };
 
     function makePlaceholder(type) {
+      const key = type.toLowerCase();
       const el = document.createElement('div');
       el.className = 'sr-icon-placeholder';
-      el.style.color = TYPE_COLORS[type] ?? 'var(--text-muted)';
+      el.style.color = TYPE_COLORS[key] ?? 'var(--text-muted)';
       el.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-        xmlns="http://www.w3.org/2000/svg">${TYPE_SVG_PATHS[type] ?? ''}</svg>`;
+        xmlns="http://www.w3.org/2000/svg">${TYPE_SVG_PATHS[key] ?? ''}</svg>`;
       return el;
     }
 
@@ -1022,10 +1027,11 @@
       nameEl.textContent = entry.name;
       a.appendChild(nameEl);
 
-      // Type badge
+      // Type badge — CSS class uses lowercase key; label uses the TYPE_LABELS map
       const badge = document.createElement('span');
-      badge.className = `type-badge ${entry.type}`;
-      badge.textContent = TYPE_LABELS[entry.type] ?? entry.type;
+      const typeKey = entry.type.toLowerCase();
+      badge.className = `type-badge ${typeKey}`;
+      badge.textContent = TYPE_LABELS[typeKey] ?? entry.type;
       a.appendChild(badge);
 
       return a;

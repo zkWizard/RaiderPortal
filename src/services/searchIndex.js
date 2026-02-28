@@ -1,5 +1,5 @@
 /**
- * searchIndex.js
+ * src/services/searchIndex.js
  *
  * Builds and searches a flat in-memory index of all searchable game entities
  * sourced from the MetaForge API: items, ARC enemies, quests, and traders.
@@ -26,25 +26,20 @@ import {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * A single searchable entry in the index.
+ * A single searchable entry in the unified index.
  *
  * @typedef {Object} IndexEntry
- * @property {string}       id        Unique identifier (slug from the API)
- * @property {string}       name      Display name
- * @property {'item'|'arc'|'quest'|'trader'} type  Entity category
- * @property {string|null}  icon      CDN icon URL (null if unavailable)
- * @property {string|null}  rarity    Rarity tier for items; null for others
- * @property {string|null}  category  item_type for items; trader_name for quests; null otherwise
+ * @property {string}  id       Unique slug from the API
+ * @property {string}  name     Display name
+ * @property {string}  type     "Item" | "ARC" | "Quest" | "Trader"
+ * @property {string}  subtype  Category/type label (item_type, "ARC Enemy", trader_name, "Trader")
+ * @property {string}  rarity   Rarity tier; empty string if not applicable
+ * @property {string}  icon     Full icon URL (guaranteed absolute https://); empty string if unavailable
+ * @property {object}  rawData  The complete original API object for this entity
  */
 
 /**
  * @typedef {'idle'|'loading'|'ready'|'error'} IndexState
- */
-
-/**
- * @typedef {Object} SearchResult
- * @property {IndexEntry}  entry
- * @property {number}      score  Lower = better match (0 = exact, 1 = prefix, 2 = word-prefix, 3 = contains)
  */
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -67,76 +62,95 @@ let _error = null;
 let _buildPromise = null;
 
 // ─────────────────────────────────────────────────────────────────────────────
+// ICON NORMALIZER
+// ─────────────────────────────────────────────────────────────────────────────
+
+const CDN = 'https://cdn.metaforge.app';
+
+/**
+ * Ensures icon URLs are absolute.
+ * API data is mostly full https:// already, but guard against relative paths.
+ *
+ * @param {string|null|undefined} raw
+ * @returns {string}  Absolute URL, or empty string if unavailable
+ */
+function normalizeIcon(raw) {
+  if (!raw) return '';
+  if (raw.startsWith('https://') || raw.startsWith('http://')) return raw;
+  // Relative path like "/arc-raiders/icons/foo.webp"
+  return `${CDN}${raw.startsWith('/') ? '' : '/'}${raw}`;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // NORMALIZERS — map raw API shapes to flat IndexEntry objects
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * @param {import('./metaforgeApi.js').Item[]} items
+ * @param {object[]} items
  * @returns {IndexEntry[]}
  */
 function normalizeItems(items) {
   return items.map((item) => ({
-    id:       item.id,
-    name:     item.name,
-    type:     'item',
-    icon:     item.icon ?? null,
-    rarity:   item.rarity ?? null,
-    category: item.item_type ?? null,
+    id:      item.id,
+    name:    item.name,
+    type:    'Item',
+    subtype: item.item_type ?? '',
+    rarity:  item.rarity ?? '',
+    icon:    normalizeIcon(item.icon),
+    rawData: item,
   }));
 }
 
 /**
- * @param {import('./metaforgeApi.js').Arc[]} arcs
+ * @param {object[]} arcs
  * @returns {IndexEntry[]}
  */
 function normalizeArcs(arcs) {
   return arcs.map((arc) => ({
-    id:       arc.id,
-    name:     arc.name,
-    type:     'arc',
-    icon:     arc.icon ?? null,
-    rarity:   null,
-    category: null,
+    id:      arc.id,
+    name:    arc.name,
+    type:    'ARC',
+    subtype: 'ARC Enemy',
+    rarity:  '',
+    icon:    normalizeIcon(arc.icon),
+    rawData: arc,
   }));
 }
 
 /**
- * Quests have no `icon` field — `image` (full-resolution artwork) is used instead.
+ * Quests have no `icon` field — `image` (artwork) is used instead.
  *
- * @param {import('./metaforgeApi.js').Quest[]} quests
+ * @param {object[]} quests
  * @returns {IndexEntry[]}
  */
 function normalizeQuests(quests) {
   return quests.map((quest) => ({
-    id:       quest.id,
-    name:     quest.name,
-    type:     'quest',
-    icon:     quest.image ?? null,
-    rarity:   null,
-    category: quest.trader_name ?? null,  // which NPC gives the quest
+    id:      quest.id,
+    name:    quest.name,
+    type:    'Quest',
+    subtype: quest.trader_name ?? '',  // which NPC gives the quest
+    rarity:  '',
+    icon:    normalizeIcon(quest.image),
+    rawData: quest,
   }));
 }
 
 /**
- * Indexes the five trader NPCs as entities.
+ * Indexes the trader NPCs as entities.
+ * The trader inventory items are already covered by normalizeItems.
  *
- * The traders API returns `{ TraderName: Item[] }` — the items in each
- * trader's inventory are already covered by the items index, so only the
- * trader NPCs themselves are added here to avoid duplicates.
- *
- * Traders have no dedicated icon endpoint. `icon` is set to null.
- *
- * @param {import('./metaforgeApi.js').TradersData} tradersData
+ * @param {object} tradersData  { TraderName: TraderItem[] }
  * @returns {IndexEntry[]}
  */
 function normalizeTraders(tradersData) {
   return Object.keys(tradersData).map((name) => ({
-    id:       name.toLowerCase(),
+    id:      name.toLowerCase(),
     name,
-    type:     'trader',
-    icon:     null,
-    rarity:   null,
-    category: null,
+    type:    'Trader',
+    subtype: 'Trader',
+    rarity:  '',
+    icon:    '',
+    rawData: { name, inventory: tradersData[name] },
   }));
 }
 
@@ -144,20 +158,10 @@ function normalizeTraders(tradersData) {
 // BUILD
 // ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * Performs the actual fetch + normalize + merge.
- * Not exported — call buildIndex() instead.
- *
- * @param {boolean} forceRefresh  Passed through to the API layer's localStorage cache.
- * @returns {Promise<IndexEntry[]>}
- */
 async function _doBuild(forceRefresh) {
   _state = 'loading';
   _error = null;
 
-  // Fetch all four endpoints in parallel. Each independently falls back to
-  // localStorage cache via metaforgeApi, so a single failing endpoint won't
-  // block the others.
   const [itemsResult, arcsResult, questsResult, tradersResult] =
     await Promise.allSettled([
       fetchItems({ forceRefresh }),
@@ -166,7 +170,6 @@ async function _doBuild(forceRefresh) {
       fetchTraders({ forceRefresh }),
     ]);
 
-  // Warn on partial failures — still index what succeeded.
   const warn = (label, reason) =>
     console.warn(`[searchIndex] ${label} failed, skipping:`, reason?.message ?? reason);
 
@@ -180,6 +183,13 @@ async function _doBuild(forceRefresh) {
   _index = entries;
   _state = 'ready';
 
+  const counts = { Item: 0, ARC: 0, Quest: 0, Trader: 0 };
+  for (const e of entries) if (e.type in counts) counts[e.type]++;
+  console.log(
+    `[searchIndex] Built: ${entries.length} entries` +
+    ` (${counts.Item} items, ${counts.ARC} ARCs, ${counts.Quest} quests, ${counts.Trader} traders)`
+  );
+
   return _index;
 }
 
@@ -188,38 +198,27 @@ async function _doBuild(forceRefresh) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Builds the search index by fetching all four endpoints, then caches the
- * result in memory for the lifetime of the session.
- *
- * Safe to call multiple times — subsequent calls return the already-built
- * index immediately without re-fetching. Concurrent calls during an in-progress
- * build share the same Promise.
+ * Builds the search index by fetching all four endpoints.
+ * Safe to call multiple times — subsequent calls return immediately.
+ * Concurrent calls during an in-progress build share the same Promise.
  *
  * @param {{ forceRefresh?: boolean }} [opts]
- *   forceRefresh: bypass both the in-memory index and the localStorage API cache.
- * @returns {Promise<IndexEntry[]>}  The completed flat index.
+ * @returns {Promise<IndexEntry[]>}
  */
 export async function buildIndex({ forceRefresh = false } = {}) {
-  // Already built and not forcing — return instantly.
-  if (_state === 'ready' && !forceRefresh) {
-    return _index;
-  }
+  if (_state === 'ready' && !forceRefresh) return _index;
 
-  // Force rebuild: discard any prior singleton promise.
   if (forceRefresh) {
     _buildPromise = null;
     _index = [];
   }
 
-  // Already in flight — return the same promise (no duplicate requests).
-  if (_buildPromise) {
-    return _buildPromise;
-  }
+  if (_buildPromise) return _buildPromise;
 
   _buildPromise = _doBuild(forceRefresh).catch((err) => {
     _state = 'error';
     _error = err instanceof Error ? err : new Error(String(err));
-    _buildPromise = null; // allow retry on next call
+    _buildPromise = null;
     throw _error;
   });
 
@@ -230,36 +229,18 @@ export async function buildIndex({ forceRefresh = false } = {}) {
 // SCORING
 // ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * Returns true if any whitespace-delimited word in `nameLower` starts with `queryLower`.
- * Used for the word-boundary tier between prefix and contains.
- *
- * "Advanced ARC Powercell" + "arc"  → true  (word "arc..." exists)
- * "Barricade Kit"          + "arc"  → false (no word starts with "arc")
- *
- * @param {string} nameLower
- * @param {string} queryLower
- * @returns {boolean}
- */
 function anyWordStartsWith(nameLower, queryLower) {
-  // Skip the first word — if the whole name starts with the query, it was
-  // already caught by the prefix tier (score 1).
   const spaceIndex = nameLower.indexOf(' ');
-  if (spaceIndex === -1) return false;   // single-word name, already handled
+  if (spaceIndex === -1) return false;
 
   let wordStart = spaceIndex + 1;
   while (wordStart < nameLower.length) {
     const nextSpace = nameLower.indexOf(' ', wordStart);
     const wordEnd = nextSpace === -1 ? nameLower.length : nextSpace;
-    const wordLen = wordEnd - wordStart;
-
     if (
-      wordLen >= queryLower.length &&
+      (wordEnd - wordStart) >= queryLower.length &&
       nameLower.startsWith(queryLower, wordStart)
-    ) {
-      return true;
-    }
-
+    ) return true;
     if (nextSpace === -1) break;
     wordStart = nextSpace + 1;
   }
@@ -267,24 +248,18 @@ function anyWordStartsWith(nameLower, queryLower) {
 }
 
 /**
- * Scores how well a lowercased name matches a lowercased query.
- *
  * Score tiers (lower = better):
  *   0 — exact match
- *   1 — name starts with query (prefix)
- *   2 — any subsequent word in name starts with query (word-boundary prefix)
+ *   1 — name starts with query
+ *   2 — any interior word starts with query
  *   3 — name contains query anywhere
  *   Infinity — no match
- *
- * @param {string} nameLower  Pre-lowercased entry name
- * @param {string} queryLower Pre-lowercased search query
- * @returns {number}
  */
 function scoreMatch(nameLower, queryLower) {
-  if (nameLower === queryLower)                     return 0;
-  if (nameLower.startsWith(queryLower))             return 1;
-  if (anyWordStartsWith(nameLower, queryLower))     return 2;
-  if (nameLower.includes(queryLower))               return 3;
+  if (nameLower === queryLower)                 return 0;
+  if (nameLower.startsWith(queryLower))         return 1;
+  if (anyWordStartsWith(nameLower, queryLower)) return 2;
+  if (nameLower.includes(queryLower))           return 3;
   return Infinity;
 }
 
@@ -295,54 +270,34 @@ function scoreMatch(nameLower, queryLower) {
 /**
  * Searches the in-memory index and returns ranked matches.
  *
- * Ranking (best → worst):
- *   1. Exact name match
- *   2. Name begins with the query
- *   3. Any interior word of the name begins with the query
- *   4. Name contains the query anywhere
- *   Within each tier, results are sorted A → Z by name.
- *
- * The index must be built before calling this. If it isn't, an empty array is
- * returned and a console warning is emitted — this lets UI components call
- * search() without crashing during the loading window.
- *
- * @param {string} query  Raw search string from the user.
- * @param {{ limit?: number, type?: 'item'|'arc'|'quest'|'trader' }} [opts]
- *   limit — max results to return (default 50)
- *   type  — restrict results to a single entity type (optional)
+ * @param {string} query  Raw search string from the user
+ * @param {{ limit?: number, type?: 'Item'|'ARC'|'Quest'|'Trader' }} [opts]
  * @returns {IndexEntry[]}
  */
 export function search(query, { limit = 50, type } = {}) {
   if (_state !== 'ready') {
-    if (_state === 'loading') {
-      console.warn('[searchIndex] search() called while index is still building.');
-    } else {
-      console.warn('[searchIndex] search() called before buildIndex().');
-    }
+    console.warn(
+      _state === 'loading'
+        ? '[searchIndex] search() called while index is still building.'
+        : '[searchIndex] search() called before buildIndex().'
+    );
     return [];
   }
 
   const q = query.trim().toLowerCase();
   if (!q) return [];
 
-  /** @type {Array<{ entry: IndexEntry, score: number }>} */
-  const scored = [];
-
   const pool = type ? _index.filter((e) => e.type === type) : _index;
+  const scored = [];
 
   for (const entry of pool) {
     const s = scoreMatch(entry.name.toLowerCase(), q);
-    if (s < Infinity) {
-      scored.push({ entry, score: s });
-    }
+    if (s < Infinity) scored.push({ entry, score: s });
   }
 
-  // Primary sort: score (lower = better).
-  // Secondary sort: name A→Z within the same score tier.
-  scored.sort((a, b) => {
-    if (a.score !== b.score) return a.score - b.score;
-    return a.entry.name.localeCompare(b.entry.name);
-  });
+  scored.sort((a, b) =>
+    a.score !== b.score ? a.score - b.score : a.entry.name.localeCompare(b.entry.name)
+  );
 
   return scored.slice(0, limit).map((r) => r.entry);
 }
@@ -354,30 +309,18 @@ export function search(query, { limit = 50, type } = {}) {
 /**
  * Returns the current state of the index.
  *
- * @returns {{
- *   state: IndexState,
- *   size: number,
- *   breakdown: { items: number, arcs: number, quests: number, traders: number },
- *   error: Error|null,
- * }}
+ * @returns {{ state: IndexState, size: number, breakdown: object, error: Error|null }}
  */
 export function getIndexState() {
-  const breakdown = { items: 0, arcs: 0, quests: 0, traders: 0 };
+  const breakdown = { Item: 0, ARC: 0, Quest: 0, Trader: 0 };
   for (const entry of _index) {
     if (entry.type in breakdown) breakdown[entry.type]++;
   }
-  return {
-    state: _state,
-    size:  _index.length,
-    breakdown,
-    error: _error,
-  };
+  return { state: _state, size: _index.length, breakdown, error: _error };
 }
 
 /**
- * Clears the in-memory index, allowing the next buildIndex() call to
- * rebuild from scratch (using the API layer's localStorage cache unless
- * forceRefresh is also passed).
+ * Clears the in-memory index, allowing the next buildIndex() call to rebuild.
  */
 export function clearIndex() {
   _index = [];
