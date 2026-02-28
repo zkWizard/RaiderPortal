@@ -703,18 +703,18 @@
     /* ═══════════════════════════════════════════════════════════
        CENTER SEARCH — visible only on detail/listing pages
     ═══════════════════════════════════════════════════════════ */
-    /* Center column: grows to fill space, centers its content */
+    /* Center column: absolutely centered in the header for true 50% alignment */
     .nav-center {
-      flex: 1;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
       display: none;
-      justify-content: center;
       align-items: center;
-      padding: 0 20px;
-      min-width: 0;
     }
     body.detail-active .nav-center { display: flex; }
 
-    .nav-searchbar-wrap { position: relative; width: 100%; max-width: 480px; }
+    /* Fixed width so the bar is always the same size regardless of surrounding elements */
+    .nav-searchbar-wrap { position: relative; width: 440px; max-width: calc(100vw - 120px); }
 
     .nav-searchbar {
       display: flex;
@@ -841,8 +841,8 @@
       .patch-tag { display: none; }
       .nav-right { gap: 8px; }
 
-      /* Center search: remove side padding on narrow screens */
-      .nav-center { padding: 0 8px; }
+      /* Shrink nav search bar on tablet/phone */
+      .nav-searchbar-wrap { width: calc(100vw - 120px); }
 
       /* ── Landing ────────────────────────────────────────── */
       .landing {
