@@ -105,48 +105,96 @@ export async function renderQuestsList(container) {
   const quests = await fetchQuests();
   document.title = 'Quests — RaiderPortal';
 
-  // Group by trader_name (issuing NPC); quests without a trader go under "Other"
-  const groups = new Map();
-  for (const quest of quests) {
-    const trader = quest.trader_name || 'Other';
-    if (!groups.has(trader)) groups.set(trader, []);
-    groups.get(trader).push(quest);
-  }
-  const sortedGroups = [...groups.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([trader, list]) => [trader, [...list].sort((a, b) => a.name.localeCompare(b.name))]);
+  // Alphabetical order
+  const sorted = [...quests].sort((a, b) => a.name.localeCompare(b.name));
 
-  let sectionsHtml = '';
-  for (const [trader, list] of sortedGroups) {
-    const rows = list.map((quest) => {
-      const href = `#/quest/${encodeURIComponent(quest.id)}`;
-      const iconHtml = quest.image
-        ? `<img class="er-icon" src="${esc(quest.image)}" alt="" loading="lazy"
-                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-           <div class="er-icon-ph" style="display:none">📜</div>`
-        : `<div class="er-icon-ph">📜</div>`;
-      const objCount = quest.objectives?.length ?? 0;
-      return `
-        <div class="entity-row">
-          ${iconHtml}
-          <div class="er-info">
-            <div class="er-name"><a href="${esc(href)}">${esc(quest.name)}</a></div>
-            <div class="er-sub">
-              ${objCount ? `${objCount} objective${objCount !== 1 ? 's' : ''}` : 'No objectives listed'}
-              ${quest.xp ? ` · ${quest.xp.toLocaleString()} XP` : ''}
-            </div>
-          </div>
-        </div>`;
-    }).join('');
+  // Unique trader names for filter pills
+  const traders = [...new Set(quests.map((q) => q.trader_name).filter(Boolean))].sort();
 
-    sectionsHtml += `
-      <div class="detail-section">
-        <div class="section-title">
-          ${esc(trader)}<span class="list-count">${list.length}</span>
-        </div>
-        <div class="entity-list">${rows}</div>
+  // Filter bar — search + trader pills
+  const filterBar = `
+    <div class="quest-filter-bar">
+      <input id="questSearch" class="quest-search" type="search"
+             placeholder="Search quests…" autocomplete="off" spellcheck="false"
+             aria-label="Search quests"/>
+      <div class="quest-filter-pills" id="questFilterPills">
+        <button class="qf-pill active" data-trader="">All</button>
+        ${traders.map((t) => `<button class="qf-pill" data-trader="${esc(t)}">${esc(t)}</button>`).join('')}
+      </div>
+    </div>`;
+
+  // Builds a thumbnail row (required / rewards)
+  function iconRow(entries, label) {
+    if (!entries?.length) return '';
+    const shown    = entries.slice(0, 3);
+    const overflow = entries.length - shown.length;
+    const icons = shown.map(({ item }) => {
+      if (!item) return '';
+      return item.icon
+        ? `<img class="qc-item-icon" src="${esc(item.icon)}" alt=""
+                title="${esc(item.name)}" loading="lazy"
+                onerror="this.style.display='none'">`
+        : `<div class="qc-item-ph" title="${esc(item.name)}">📦</div>`;
+    }).filter(Boolean).join('');
+    if (!icons) return '';
+    const more = overflow > 0 ? `<span class="qc-item-overflow">+${overflow}</span>` : '';
+    return `
+      <div class="qc-items-row">
+        <span class="qc-items-label">${esc(label)}</span>
+        ${icons}${more}
       </div>`;
   }
+
+  const cards = sorted.map((quest) => {
+    const href = `#/quest/${encodeURIComponent(quest.id)}`;
+
+    // Dimmed artwork banner
+    const headerHtml = quest.image
+      ? `<img class="qc-header-img" src="${esc(quest.image)}" alt="" loading="lazy"
+              onerror="this.style.display='none'">
+         <div class="qc-header-placeholder">📜</div>`
+      : `<div class="qc-header-placeholder">📜</div>`;
+
+    const traderBadge = quest.trader_name
+      ? `<span class="qc-trader-badge">${esc(quest.trader_name)}</span>`
+      : '';
+
+    // First objective as preview text
+    const objectivePreview = quest.objectives?.[0]
+      ? `<p class="qc-objective">${esc(quest.objectives[0])}</p>`
+      : '';
+
+    const reqRow    = iconRow(quest.required_items, 'Needs');
+    const rewardRow = iconRow(quest.rewards,         'Rewards');
+
+    // Footer left: XP if known, otherwise objective count
+    const objCount  = quest.objectives?.length ?? 0;
+    const footerLeft = quest.xp
+      ? `<span class="qc-xp">⚡ ${quest.xp.toLocaleString()} XP</span>`
+      : objCount
+        ? `<span class="qc-obj-count">${objCount} objective${objCount !== 1 ? 's' : ''}</span>`
+        : '';
+
+    return `
+      <a class="quest-card" href="${esc(href)}"
+         data-name="${esc(quest.name.toLowerCase())}"
+         data-trader="${esc(quest.trader_name ?? '')}">
+        <div class="qc-header">
+          ${headerHtml}
+          ${traderBadge}
+        </div>
+        <div class="qc-body">
+          <div class="qc-name">${esc(quest.name)}</div>
+          ${objectivePreview}
+          ${reqRow}
+          ${rewardRow}
+        </div>
+        <div class="qc-footer">
+          ${footerLeft}
+          <span class="qc-arrow">→</span>
+        </div>
+      </a>`;
+  }).join('');
 
   container.innerHTML = `
     <div class="page-quest">
@@ -154,10 +202,43 @@ export async function renderQuestsList(container) {
         ${breadcrumb('Quests')}
         ${bannerHeader('Quests', `${quests.length.toLocaleString()} quests`)}
       </div>
-      <div class="list-body detail-full">
-        ${sectionsHtml}
+      <div class="list-body">
+        ${filterBar}
+        <div class="quest-grid" id="questGrid">
+          ${cards || '<p class="quest-empty-msg">No quests found.</p>'}
+          <p class="quest-empty-msg" id="questNoResults" hidden>No quests match your filter.</p>
+        </div>
       </div>
     </div>`;
+
+  // ── Filter logic ────────────────────────────────────────────
+  const searchEl    = container.querySelector('#questSearch');
+  const pillsEl     = container.querySelector('#questFilterPills');
+  const gridEl      = container.querySelector('#questGrid');
+  const noResultsEl = container.querySelector('#questNoResults');
+  let activeTrader  = '';
+
+  function applyFilter() {
+    const q = searchEl.value.trim().toLowerCase();
+    let visible = 0;
+    for (const card of gridEl.querySelectorAll('.quest-card')) {
+      const show = (!q || card.dataset.name.includes(q))
+                && (!activeTrader || card.dataset.trader === activeTrader);
+      card.hidden = !show;
+      if (show) visible++;
+    }
+    noResultsEl.hidden = visible > 0;
+  }
+
+  searchEl.addEventListener('input', applyFilter);
+
+  pillsEl.addEventListener('click', (e) => {
+    const pill = e.target.closest('.qf-pill');
+    if (!pill) return;
+    activeTrader = pill.dataset.trader;
+    for (const p of pillsEl.querySelectorAll('.qf-pill')) p.classList.toggle('active', p === pill);
+    applyFilter();
+  });
 }
 
 // ─── ARC ───────────────────────────────────────────────────────
