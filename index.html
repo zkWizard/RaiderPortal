@@ -1118,6 +1118,7 @@
   <script type="module">
     import { buildIndex, search, getIndexState } from './src/services/searchIndex.js';
     import { initRouter } from './src/router.js';
+    import { runLocationDiagnostics } from './src/diagnostics/locationDiag.js';
 
     // ─── Category select → index type ──────────────────────────
     const CATEGORY_TYPE = {
@@ -1411,6 +1412,11 @@
     // ─── Start the hash router ──────────────────────────────────
     // Runs immediately so direct-URL visits work without waiting for index.
     initRouter();
+
+    // ─── Location data diagnostics (temporary — remove when done) ───────
+    runLocationDiagnostics().catch((err) =>
+      console.error('[LocationDiag] Unexpected error:', err)
+    );
 
     // ─── Kick off index build on page load ──────────────────────
     if (landingSearch.loadingBar) landingSearch.loadingBar.classList.add('active');
