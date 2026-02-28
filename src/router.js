@@ -6,10 +6,15 @@
  * visibility so only one view is shown at a time.
  *
  * Supported patterns:
- *   #/item/:id    → itemPage.js
- *   #/arc/:id     → arcPage.js
- *   #/quest/:id   → questPage.js
- *   #/trader/:id  → traderPage.js
+ *   #/items          → listPages.js (items listing)
+ *   #/quests         → listPages.js (quests listing)
+ *   #/arc            → listPages.js (ARC listing)
+ *   #/traders        → listPages.js (traders listing)
+ *   #/events         → listPages.js (events placeholder)
+ *   #/item/:id       → itemPage.js
+ *   #/arc/:id        → arcPage.js
+ *   #/quest/:id      → questPage.js
+ *   #/trader/:id     → traderPage.js
  *
  * Anything else → shows the landing page.
  */
@@ -18,7 +23,15 @@ import { renderItemGroup } from './pages/itemPage.js';
 import { renderQuest }     from './pages/questPage.js';
 import { renderArc }       from './pages/arcPage.js';
 import { renderTrader }    from './pages/traderPage.js';
+import {
+  renderItemsList,
+  renderQuestsList,
+  renderArcsList,
+  renderTradersList,
+  renderEventsList,
+} from './pages/listPages.js';
 
+/** Detail routes — require an :id segment. */
 const RENDERERS = {
   item:   renderItemGroup,
   arc:    renderArc,
@@ -26,8 +39,20 @@ const RENDERERS = {
   trader: renderTrader,
 };
 
-/** Pattern that matches valid detail-page hashes. */
+/** Listing routes — no :id segment, one per nav category. */
+const LIST_RENDERERS = {
+  items:   renderItemsList,
+  quests:  renderQuestsList,
+  arc:     renderArcsList,
+  traders: renderTradersList,
+  events:  renderEventsList,
+};
+
+/** Matches detail-page hashes: #/item/:id, #/arc/:id, etc. */
 const ROUTE_RE = /^#\/(item|arc|quest|trader)\/(.+)$/;
+
+/** Matches listing-page hashes: #/items, #/quests, #/arc, #/traders, #/events. */
+const LIST_RE  = /^#\/(items|quests|arc|traders|events)$/;
 
 const DEFAULT_TITLE = 'RaiderPortal — ARC Raiders Database';
 
@@ -48,8 +73,9 @@ async function handleRoute() {
   const content = document.getElementById('detailContent');
   const detail  = document.getElementById('detailView');
 
-  const hash  = window.location.hash;
-  const match = hash.match(ROUTE_RE);
+  const hash        = window.location.hash;
+  const detailMatch = hash.match(ROUTE_RE);
+  const listMatch   = hash.match(LIST_RE);
 
   // Toggle body.detail-active; suppress animation on first paint
   function setDetailActive(active) {
@@ -64,15 +90,12 @@ async function handleRoute() {
     _initialLoad = false;
   }
 
-  if (!match) {
+  if (!detailMatch && !listMatch) {
     setDetailActive(false);
     document.title = DEFAULT_TITLE;
     document.dispatchEvent(new CustomEvent('rp:showLanding'));
     return;
   }
-
-  const [, type, rawId] = match;
-  const id = decodeURIComponent(rawId);
 
   setDetailActive(true);
   detail.scrollTop = 0;
@@ -85,9 +108,16 @@ async function handleRoute() {
     </div>`;
 
   try {
-    await RENDERERS[type](id, content);
+    if (detailMatch) {
+      const [, type, rawId] = detailMatch;
+      const id = decodeURIComponent(rawId);
+      await RENDERERS[type](id, content);
+    } else {
+      const [, listType] = listMatch;
+      await LIST_RENDERERS[listType](content);
+    }
   } catch (err) {
-    console.error('[router]', type, id, err);
+    console.error('[router]', hash, err);
     content.innerHTML = `
       <div class="detail-error">
         Failed to load — ${escHtml(err.message)}

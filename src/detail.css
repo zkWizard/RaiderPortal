@@ -622,6 +622,122 @@ body.no-transition .detail-view  { transition: none !important; }
 }
 
 /* ═══════════════════════════════════════════════════════════════════
+   LISTING PAGE LAYOUT
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Content wrapper below the banner on listing pages */
+.list-body { padding-top: 4px; }
+
+/* Count suffix inside section titles  e.g. "Weapon (12)" */
+.list-count {
+  font-weight: 400;
+  letter-spacing: 0;
+  opacity: 0.45;
+  margin-left: 8px;
+}
+
+/* ── Entity card grid (ARC / Trader listing) ─────────────── */
+.entity-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 8px;
+}
+
+/* Wider columns for trader cards — fewer, bigger */
+.entity-grid--traders {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+.entity-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 16px;
+  border-radius: 8px;
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  text-align: center;
+  transition: background 0.08s, border-color 0.08s;
+  color: var(--cream);
+}
+
+.entity-card:hover {
+  background: rgba(255,86,0,0.06);
+  border-color: var(--border-bright);
+}
+
+.page-arc    .entity-card:hover,
+.page-trader .entity-card:hover { background: var(--page-glow, rgba(255,86,0,0.06)); }
+
+.ec-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  object-fit: contain;
+  background: var(--bg-void);
+}
+
+.ec-icon-ph {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  background: var(--bg-void);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: var(--text-muted);
+}
+
+.ec-name {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.ec-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: -4px;
+}
+
+/* ── Events placeholder ──────────────────────────────────── */
+.page-events {
+  --page-accent: #ffcc00;
+  --page-glow:   rgba(255,204,0,0.12);
+  --banner-bg:   url('https://cdn.metaforge.app/arc-raiders/ui/events.webp');
+}
+
+.events-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.events-placeholder-icon {
+  font-size: 48px;
+  opacity: 0.35;
+}
+
+.events-placeholder-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--cream);
+}
+
+.events-placeholder-body {
+  font-size: 13px;
+  color: var(--text-muted);
+  max-width: 380px;
+  line-height: 1.65;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
    PAGE TYPE THEMES
    Custom properties scoped to page-type wrapper classes.
    ═══════════════════════════════════════════════════════════════════ */
