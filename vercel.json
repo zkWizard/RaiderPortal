@@ -1,9 +1,3 @@
 {
-  "buildCommand": null,
-  "outputDirectory": ".",
-  "functions": {
-    "api/**/*.js": {
-      "runtime": "@vercel/node"
-    }
-  }
+  "outputDirectory": "."
 }
