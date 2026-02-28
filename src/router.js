@@ -14,13 +14,13 @@
  * Anything else → shows the landing page.
  */
 
-import { renderItem }   from './pages/itemPage.js';
-import { renderQuest }  from './pages/questPage.js';
-import { renderArc }    from './pages/arcPage.js';
-import { renderTrader } from './pages/traderPage.js';
+import { renderItemGroup } from './pages/itemPage.js';
+import { renderQuest }     from './pages/questPage.js';
+import { renderArc }       from './pages/arcPage.js';
+import { renderTrader }    from './pages/traderPage.js';
 
 const RENDERERS = {
-  item:   renderItem,
+  item:   renderItemGroup,
   arc:    renderArc,
   quest:  renderQuest,
   trader: renderTrader,

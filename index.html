@@ -987,7 +987,11 @@
     // ─── Route helper ───────────────────────────────────────────
     // entry.type is capitalized ("Item", "ARC", etc.) but the router
     // expects lowercase slugs (#/item/:id, #/arc/:id, etc.)
+    // Items use the normalised base-name slug so all tiers share one page.
     function routeFor(entry) {
+      if (entry.type === 'Item') {
+        return `#/item/${encodeURIComponent(entry.baseSlug)}`;
+      }
       return `#/${entry.type.toLowerCase()}/${encodeURIComponent(entry.id)}`;
     }
 
@@ -1155,7 +1159,7 @@
       } else if (e.key === 'Enter') {
         if (isOpen && activeIdx >= 0) {
           e.preventDefault();
-          window.location.hash = routeFor(currentResults[activeIdx]);
+          window.location.href = routeFor(currentResults[activeIdx]);
           closeDropdown();
           searchInput.blur();
         } else {
