@@ -1292,11 +1292,29 @@ body.no-transition .detail-view  { transition: none !important; }
 .item-card[data-rarity="Legendary"] { --rc: #ffcc00; }
 
 .ic-icon-wrap {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 14px 16px 10px;
   background: rgba(0,0,0,0.18);
+}
+
+/* Tier count badge — top-right corner of the icon area */
+.ic-tier-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  background: rgba(0,0,0,0.55);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-bright);
+  pointer-events: none;
+  white-space: nowrap;
 }
 
 .ic-icon {

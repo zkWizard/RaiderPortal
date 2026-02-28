@@ -124,49 +124,82 @@ export async function renderItemsList(container) {
       </div>
     </div>`;
 
-  // ── Card builder ──────────────────────────────────────────────
-  function buildCard(item) {
-    const href   = `#/item/${encodeURIComponent(nameToSlug(normalizeBaseName(item.name)))}`;
-    const rarity = item.rarity ?? 'Common';
-    const bucket = getBucket(item.item_type);
-    const weight = item.stat_block?.weight;
-    const iconHtml = item.icon
-      ? `<img class="ic-icon" src="${esc(item.icon)}" alt="" loading="lazy"
+  // ── Group items by base slug (collapses tiers/blueprints) ─────
+  //    e.g. "Anvil I", "Anvil II", "Anvil Blueprint" → slug "anvil"
+  const groupMap = new Map(); // slug → { slug, baseName, items[] }
+  for (const item of items) {
+    const baseName = normalizeBaseName(item.name);
+    const slug     = nameToSlug(baseName);
+    if (!groupMap.has(slug)) groupMap.set(slug, { slug, baseName, items: [] });
+    groupMap.get(slug).items.push(item);
+  }
+
+  // Representative item: prefer non-blueprint/recipe, then highest rarity
+  function pickRep(groupItems) {
+    const pool = groupItems.filter(
+      (i) => !['blueprint', 'recipe'].includes((i.item_type ?? '').toLowerCase())
+    );
+    const candidates = pool.length ? pool : groupItems;
+    return candidates.reduce((best, cur) =>
+      (RARITY_RANK[cur.rarity] ?? 0) > (RARITY_RANK[best.rarity] ?? 0) ? cur : best
+    );
+  }
+
+  // ── Card builder (one card per group) ─────────────────────────
+  function buildGroupCard({ slug, baseName, items: g }) {
+    const rep        = pickRep(g);
+    const href       = `#/item/${encodeURIComponent(slug)}`;
+    const highestRar = g.reduce((best, cur) =>
+      (RARITY_RANK[cur.rarity] ?? 0) > (RARITY_RANK[best.rarity] ?? 0) ? cur : best
+    ).rarity ?? 'Common';
+    const bucket     = getBucket(rep.item_type);
+    const maxValue   = Math.max(...g.map((i) => i.value ?? 0));
+    const weight     = rep.stat_block?.weight;
+
+    const iconHtml = rep.icon
+      ? `<img class="ic-icon" src="${esc(rep.icon)}" alt="" loading="lazy"
               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
          <div class="ic-icon-ph" style="display:none">📦</div>`
       : `<div class="ic-icon-ph">📦</div>`;
+
+    const tierBadge = g.length > 1
+      ? `<span class="ic-tier-badge">${g.length} tiers</span>`
+      : '';
+
     const metaParts = [];
-    if (item.value) metaParts.push(`${item.value.toLocaleString()} RC`);
-    if (weight)     metaParts.push(`${weight} kg`);
+    if (maxValue) metaParts.push(`${maxValue.toLocaleString()} RC`);
+    if (weight)   metaParts.push(`${weight} kg`);
+
     return `
       <a class="item-card" href="${esc(href)}"
-         data-name="${esc(item.name.toLowerCase())}"
+         data-name="${esc(baseName.toLowerCase())}"
          data-bucket="${esc(bucket)}"
-         data-rarity="${esc(rarity)}"
-         data-value="${item.value ?? 0}">
-        <div class="ic-icon-wrap">${iconHtml}</div>
+         data-rarity="${esc(highestRar)}"
+         data-value="${maxValue}">
+        <div class="ic-icon-wrap">
+          ${iconHtml}
+          ${tierBadge}
+        </div>
         <div class="ic-body">
-          <div class="ic-name">${esc(item.name)}</div>
+          <div class="ic-name">${esc(baseName)}</div>
           <div class="ic-footer">
-            ${item.item_type ? `<span class="ic-cat">${esc(item.item_type)}</span>` : ''}
-            <span class="ic-rarity">${esc(rarity)}</span>
+            ${rep.item_type ? `<span class="ic-cat">${esc(rep.item_type)}</span>` : ''}
+            <span class="ic-rarity">${esc(highestRar)}</span>
           </div>
           ${metaParts.length ? `<div class="ic-meta">${metaParts.join(' · ')}</div>` : ''}
         </div>
       </a>`;
   }
 
-  // Initial render: alphabetical
-  const initialCards = [...items]
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .map(buildCard)
-    .join('');
+  // Initial render: alphabetical by base name
+  const groups = [...groupMap.values()].sort((a, b) => a.baseName.localeCompare(b.baseName));
+  const initialCards = groups.map(buildGroupCard).join('');
 
   container.innerHTML = `
     <div class="page-item">
       <div class="detail-banner">
         ${breadcrumb('Items')}
-        ${bannerHeader('Items', `${items.length.toLocaleString()} items`)}
+        ${bannerHeader('Items', `${groups.length.toLocaleString()} items · ${items.length.toLocaleString()} variants`)}
       </div>
       <div class="list-body">
         ${filterBar}
