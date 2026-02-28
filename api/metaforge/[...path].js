@@ -31,11 +31,19 @@ module.exports = async function handler(req, res) {
   }
 
   // ── Build the upstream URL ─────────────────────────────────────────────
-  // req.query.path is the [...path] catch-all: an array of path segments.
+  // When a vercel.json rewrite is in play, req.query.path may be empty.
+  // Fall back to parsing req.url directly, which always contains the full path.
   const segments = req.query.path;
-  const upstreamPath = Array.isArray(segments)
-    ? segments.join('/')
-    : (segments || '');
+  let upstreamPath;
+  if (Array.isArray(segments) && segments.length > 0) {
+    upstreamPath = segments.join('/');
+  } else if (segments) {
+    upstreamPath = segments;
+  } else {
+    // Parse from req.url: /api/metaforge/arc-raiders/items → arc-raiders/items
+    const urlPath = (req.url || '').split('?')[0];
+    upstreamPath = urlPath.replace(/^\/api\/metaforge\/?/, '');
+  }
 
   // Forward all query params except the internal 'path' routing key
   const params = new URLSearchParams();
