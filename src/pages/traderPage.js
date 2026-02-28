@@ -122,9 +122,13 @@ export async function renderTrader(id, container) {
   }
 
   container.innerHTML = `
-    ${breadcrumb}
-    ${hero}
-    <div class="detail-full">
-      ${inventoryHtml || '<p class="empty-note">This trader has no listed inventory.</p>'}
+    <div class="page-trader">
+      <div class="detail-banner">
+        ${breadcrumb}
+        ${hero}
+      </div>
+      <div class="detail-full">
+        ${inventoryHtml || '<p class="empty-note">This trader has no listed inventory.</p>'}
+      </div>
     </div>`;
 }

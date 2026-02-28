@@ -76,7 +76,7 @@ export async function renderArc(id, container) {
     <nav class="detail-breadcrumb" aria-label="Breadcrumb">
       <a class="bc-link" href="#">Home</a>
       <span class="bc-sep">›</span>
-      <span class="bc-cat">ARCs</span>
+      <span class="bc-cat">ARC</span>
       <span class="bc-sep">›</span>
       <span class="bc-current">${esc(arc.name)}</span>
     </nav>`;
@@ -98,12 +98,6 @@ export async function renderArc(id, container) {
       </div>
     </div>`;
 
-  // Full-resolution artwork
-  const artwork = arc.image
-    ? `<img class="detail-artwork" src="${esc(arc.image)}" alt="${esc(arc.name)} artwork" loading="lazy"
-            onerror="this.remove()">`
-    : '';
-
   const descriptionSection = arc.description ? `
     <div class="detail-section">
       <div class="section-title">Description</div>
@@ -117,11 +111,14 @@ export async function renderArc(id, container) {
     </div>`;
 
   container.innerHTML = `
-    ${breadcrumb}
-    ${hero}
-    <div class="detail-full">
-      ${artwork}
-      ${descriptionSection}
-      ${lootSection}
+    <div class="page-arc">
+      <div class="detail-banner"${arc.image ? ` style="--banner-bg: url('${esc(arc.image)}')"` : ''}>
+        ${breadcrumb}
+        ${hero}
+      </div>
+      <div class="detail-full">
+        ${descriptionSection}
+        ${lootSection}
+      </div>
     </div>`;
 }

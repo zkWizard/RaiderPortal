@@ -131,6 +131,28 @@ function sortItemsByTier(items) {
   });
 }
 
+// ─── Subcategory classifier ────────────────────────────────────
+// Maps item_type to a CSS modifier class that drives the banner accent colour.
+
+const ARMOR_TYPES      = new Set(['armor', 'helmet', 'backpack', 'shield', 'chest armor', 'leg armor', 'body armor', 'utility']);
+const GRENADE_TYPES    = new Set(['grenade', 'throwable', 'explosive']);
+const CONSUMABLE_TYPES = new Set(['consumable', 'medical', 'medical item', 'medkit', 'food', 'drink']);
+const MOD_TYPES        = new Set(['mod', 'weapon mod', 'attachment']);
+const MATERIAL_TYPES   = new Set(['material', 'resource', 'component', 'crafting material', 'crafting resource']);
+const KEY_TYPES        = new Set(['key', 'access card', 'keycard', 'card']);
+
+function getItemSubClass(item) {
+  const t = (item.item_type ?? '').toLowerCase();
+  if (t === 'blueprint' || t === 'recipe') return 'sub-blueprint';
+  if (ARMOR_TYPES.has(t))      return 'sub-armor';
+  if (GRENADE_TYPES.has(t))    return 'sub-grenade';
+  if (CONSUMABLE_TYPES.has(t)) return 'sub-consumable';
+  if (MOD_TYPES.has(t))        return 'sub-mod';
+  if (MATERIAL_TYPES.has(t))   return 'sub-material';
+  if (KEY_TYPES.has(t))        return 'sub-key';
+  return ''; // weapons and unknown types use default orange accent
+}
+
 // ─── Section builders ──────────────────────────────────────────
 
 function buildIconHtml(item) {
@@ -279,9 +301,9 @@ function buildSidebar(item, soldBy) {
   return html;
 }
 
-// ─── Per-item content block (reused as body of each tier panel) ─
+// ─── Per-item body block (main + sidebar, no hero) ─────────────
 
-function buildItemContent(item, soldBy) {
+function buildBody(item, soldBy) {
   const mainContent = [
     item.description ? `
       <div class="detail-section">
@@ -305,11 +327,18 @@ function buildItemContent(item, soldBy) {
   ].filter(Boolean).join('');
 
   return `
-    ${buildHero(item)}
     <div class="detail-body">
       <div class="detail-main">${mainContent}</div>
       <div class="detail-sidebar">${buildSidebar(item, soldBy)}</div>
     </div>`;
+}
+
+// ─── Per-item content block (hero + body — used inside tier panels) ─
+
+function buildItemContent(item, soldBy) {
+  return `
+    ${buildHero(item)}
+    ${buildBody(item, soldBy)}`;
 }
 
 // ─── Main export ───────────────────────────────────────────────
@@ -360,17 +389,28 @@ export async function renderItemGroup(slug, container) {
 
   // ── Single-item path — no tier selector ───────────────────────
   if (sorted.length === 1) {
-    const item   = sorted[0];
-    const soldBy = soldByMap.get(item.id) ?? [];
+    const item     = sorted[0];
+    const soldBy   = soldByMap.get(item.id) ?? [];
+    const subClass = getItemSubClass(item);
     document.title = `${item.name} — RaiderPortal`;
     container.innerHTML = `
-      ${breadcrumb}
-      ${buildItemContent(item, soldBy)}`;
+      <div class="page-item${subClass ? ' ' + subClass : ''}">
+        <div class="detail-banner">
+          ${breadcrumb}
+          ${buildHero(item)}
+        </div>
+        ${buildBody(item, soldBy)}
+      </div>`;
     return;
   }
 
   // ── Multi-tier path — tier tabs + swappable panels ─────────────
   document.title = `${baseName} — RaiderPortal`;
+
+  // Use the first non-blueprint/recipe item to pick the accent colour for the group
+  const subClass = getItemSubClass(
+    sorted.find((i) => i.item_type !== 'Blueprint' && i.item_type !== 'Recipe') ?? sorted[0]
+  );
 
   const tierBtns = sorted.map((item, i) => {
     const label = getTierLabel(item.name) ?? item.name;
@@ -386,12 +426,16 @@ export async function renderItemGroup(slug, container) {
   }).join('');
 
   container.innerHTML = `
-    ${breadcrumb}
-    <div class="unified-header">
-      <h1 class="unified-title">${esc(baseName)}</h1>
-      <div class="tier-nav">${tierBtns}</div>
-    </div>
-    ${panels}`;
+    <div class="page-item${subClass ? ' ' + subClass : ''}">
+      <div class="detail-banner">
+        ${breadcrumb}
+        <div class="unified-header">
+          <h1 class="unified-title">${esc(baseName)}</h1>
+          <div class="tier-nav">${tierBtns}</div>
+        </div>
+      </div>
+      ${panels}
+    </div>`;
 
   // Wire up tab switching after innerHTML is set
   const allBtns   = container.querySelectorAll('.tier-tab');
