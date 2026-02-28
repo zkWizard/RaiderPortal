@@ -46,64 +46,158 @@ function bannerHeader(title, sub) {
 
 // ─── Items ─────────────────────────────────────────────────────
 
+const RARITY_RANK = { Common: 0, Uncommon: 1, Rare: 2, Epic: 3, Legendary: 4 };
+
 export async function renderItemsList(container) {
   const items = await fetchItems();
   document.title = 'Items — RaiderPortal';
 
-  // Group by item_type (α-sorted); items within each group α-sorted by name
-  const groups = new Map();
-  for (const item of items) {
-    const cat = item.item_type || 'Other';
-    if (!groups.has(cat)) groups.set(cat, []);
-    groups.get(cat).push(item);
-  }
-  const sortedGroups = [...groups.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([cat, list]) => [cat, [...list].sort((a, b) => a.name.localeCompare(b.name))]);
+  // Derive unique categories from actual data (alphabetically sorted)
+  const categories = [...new Set(items.map((i) => i.item_type).filter(Boolean))].sort();
 
-  let sectionsHtml = '';
-  for (const [cat, list] of sortedGroups) {
-    const rows = list.map((item) => {
-      const iconUrl = item.icon;
-      const iconHtml = iconUrl
-        ? `<img class="er-icon" src="${esc(iconUrl)}" alt="" loading="lazy"
-                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-           <div class="er-icon-ph" style="display:none">📦</div>`
-        : `<div class="er-icon-ph">📦</div>`;
-      const rc  = rarityClass(item.rarity);
-      const href = `#/item/${encodeURIComponent(nameToSlug(normalizeBaseName(item.name)))}`;
-      return `
-        <div class="entity-row">
-          ${iconHtml}
-          <div class="er-info">
-            <div class="er-name"><a href="${esc(href)}">${esc(item.name)}</a></div>
-            <div class="er-sub">
-              ${item.rarity ? `<span class="${rc}">${esc(item.rarity)}</span>` : ''}
-              ${item.value  ? ` · ${item.value.toLocaleString()} RC` : ''}
-            </div>
-          </div>
-        </div>`;
-    }).join('');
-
-    sectionsHtml += `
-      <div class="detail-section">
-        <div class="section-title">
-          ${esc(cat)}<span class="list-count">${list.length}</span>
+  // ── Filter bar ────────────────────────────────────────────────
+  const filterBar = `
+    <div class="item-filter-bar">
+      <div class="item-filter-top">
+        <div class="item-search-wrap">
+          <svg class="item-search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+          </svg>
+          <input id="itemSearch" class="item-search" type="search"
+                 placeholder="Search items…" autocomplete="off" spellcheck="false"
+                 aria-label="Search items"/>
         </div>
-        <div class="entity-list">${rows}</div>
-      </div>`;
+        <div class="item-sort-wrap">
+          <select id="itemSort" class="item-sort" aria-label="Sort items">
+            <option value="name-asc">Name A→Z</option>
+            <option value="name-desc">Name Z→A</option>
+            <option value="rarity-desc">Rarity: High→Low</option>
+            <option value="rarity-asc">Rarity: Low→High</option>
+            <option value="value-desc">Value: High→Low</option>
+            <option value="value-asc">Value: Low→High</option>
+          </select>
+        </div>
+      </div>
+      <div class="item-filter-pills" id="itemFilterPills">
+        <button class="if-pill active" data-cat="">All</button>
+        ${categories.map((c) => `<button class="if-pill" data-cat="${esc(c)}">${esc(c)}</button>`).join('')}
+      </div>
+    </div>`;
+
+  // ── Card builder ──────────────────────────────────────────────
+  function buildCard(item) {
+    const href   = `#/item/${encodeURIComponent(nameToSlug(normalizeBaseName(item.name)))}`;
+    const rarity = item.rarity ?? 'Common';
+    const weight = item.stat_block?.weight;
+    const iconHtml = item.icon
+      ? `<img class="ic-icon" src="${esc(item.icon)}" alt="" loading="lazy"
+              onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+         <div class="ic-icon-ph" style="display:none">📦</div>`
+      : `<div class="ic-icon-ph">📦</div>`;
+    const metaParts = [];
+    if (item.value) metaParts.push(`${item.value.toLocaleString()} RC`);
+    if (weight)     metaParts.push(`${weight} kg`);
+    return `
+      <a class="item-card" href="${esc(href)}"
+         data-name="${esc(item.name.toLowerCase())}"
+         data-cat="${esc(item.item_type ?? '')}"
+         data-rarity="${esc(rarity)}"
+         data-value="${item.value ?? 0}">
+        <div class="ic-icon-wrap">${iconHtml}</div>
+        <div class="ic-body">
+          <div class="ic-name">${esc(item.name)}</div>
+          <div class="ic-footer">
+            ${item.item_type ? `<span class="ic-cat">${esc(item.item_type)}</span>` : ''}
+            <span class="ic-rarity">${esc(rarity)}</span>
+          </div>
+          ${metaParts.length ? `<div class="ic-meta">${metaParts.join(' · ')}</div>` : ''}
+        </div>
+      </a>`;
   }
+
+  // Initial render: alphabetical
+  const initialCards = [...items]
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map(buildCard)
+    .join('');
 
   container.innerHTML = `
     <div class="page-item">
       <div class="detail-banner">
         ${breadcrumb('Items')}
-        ${bannerHeader('Items', `${items.length.toLocaleString()} items across ${sortedGroups.length} categories`)}
+        ${bannerHeader('Items', `${items.length.toLocaleString()} items · ${categories.length} categories`)}
       </div>
       <div class="list-body">
-        ${sectionsHtml}
+        ${filterBar}
+        <div class="item-grid" id="itemGrid">
+          ${initialCards}
+          <p class="item-empty-msg" id="itemNoResults" hidden>No items match your filter.</p>
+        </div>
       </div>
     </div>`;
+
+  // ── Interactive logic ─────────────────────────────────────────
+  const searchEl    = container.querySelector('#itemSearch');
+  const sortEl      = container.querySelector('#itemSort');
+  const pillsEl     = container.querySelector('#itemFilterPills');
+  const gridEl      = container.querySelector('#itemGrid');
+  const noResultsEl = container.querySelector('#itemNoResults');
+  const activeCategories = new Set();
+
+  function applyFilter() {
+    const q = searchEl.value.trim().toLowerCase();
+    let visible = 0;
+    for (const card of gridEl.querySelectorAll('.item-card')) {
+      const show = (!q || card.dataset.name.includes(q))
+                && (activeCategories.size === 0 || activeCategories.has(card.dataset.cat));
+      card.hidden = !show;
+      if (show) visible++;
+    }
+    noResultsEl.hidden = visible > 0;
+  }
+
+  function applySort() {
+    const val   = sortEl.value;
+    const cards = [...gridEl.querySelectorAll('.item-card')];
+    cards.sort((a, b) => {
+      switch (val) {
+        case 'name-asc':    return a.dataset.name.localeCompare(b.dataset.name);
+        case 'name-desc':   return b.dataset.name.localeCompare(a.dataset.name);
+        case 'rarity-asc':  return (RARITY_RANK[a.dataset.rarity] ?? 99) - (RARITY_RANK[b.dataset.rarity] ?? 99);
+        case 'rarity-desc': return (RARITY_RANK[b.dataset.rarity] ?? 99) - (RARITY_RANK[a.dataset.rarity] ?? 99);
+        case 'value-asc':   return Number(a.dataset.value) - Number(b.dataset.value);
+        case 'value-desc':  return Number(b.dataset.value) - Number(a.dataset.value);
+        default:            return 0;
+      }
+    });
+    for (const card of cards) gridEl.insertBefore(card, noResultsEl);
+    applyFilter();
+  }
+
+  searchEl.addEventListener('input', applyFilter);
+  sortEl.addEventListener('change', applySort);
+
+  pillsEl.addEventListener('click', (e) => {
+    const pill = e.target.closest('.if-pill');
+    if (!pill) return;
+    const cat = pill.dataset.cat;
+    if (cat === '') {
+      activeCategories.clear();
+      for (const p of pillsEl.querySelectorAll('.if-pill')) p.classList.remove('active');
+      pill.classList.add('active');
+    } else {
+      if (activeCategories.has(cat)) {
+        activeCategories.delete(cat);
+        pill.classList.remove('active');
+      } else {
+        activeCategories.add(cat);
+        pill.classList.add('active');
+      }
+      pillsEl.querySelector('[data-cat=""]').classList.toggle('active', activeCategories.size === 0);
+    }
+    applyFilter();
+  });
 }
 
 // ─── Quests ────────────────────────────────────────────────────
