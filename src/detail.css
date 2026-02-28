@@ -1266,3 +1266,29 @@ body.no-transition .detail-view  { transition: none !important; }
   font-size: 14px;
   font-weight: 500;
 }
+
+/* ── Trader avatar (initials fallback) ──────────────────────── */
+.trader-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.45);
+  background: var(--bg-elevated, #1e2028);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+/* Size modifiers */
+.trader-avatar.avatar-hero { width: 88px; height: 88px; font-size: 32px; }
+.trader-avatar.avatar-card { width: 64px; height: 64px; font-size: 22px; }
+
+/* Per-trader color gradients */
+.trader-avatar--apollo  { background: linear-gradient(135deg, #ff5600 0%, #ffcc00 100%); }
+.trader-avatar--celeste { background: linear-gradient(135deg, #0070f3 0%, #00e5ff 100%); }
+.trader-avatar--lance   { background: linear-gradient(135deg, #d0002a 0%, #ff6b6b 100%); }
+.trader-avatar--shani   { background: linear-gradient(135deg, #00845a 0%, #00e5a0 100%); }
+.trader-avatar--tianwen { background: linear-gradient(135deg, #7c3aed 0%, #c084fc 100%); }

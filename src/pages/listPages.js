@@ -10,6 +10,13 @@ import { normalizeBaseName, nameToSlug } from '../services/searchIndex.js';
 
 // ─── Utilities ────────────────────────────────────────────────
 
+function traderAvatar(name, sizeClass) {
+  const slug = name.toLowerCase().replace(/\s+/g, '');
+  const caps = name.match(/[A-Z]/g);
+  const initials = caps && caps.length >= 2 ? caps.slice(0, 2).join('') : name.slice(0, 2).toUpperCase();
+  return `<div class="trader-avatar ${sizeClass} trader-avatar--${slug}" aria-hidden="true">${initials}</div>`;
+}
+
 function esc(s) {
   return String(s ?? '')
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -285,12 +292,15 @@ export async function renderTradersList(container) {
 
   const sorted = Object.keys(tradersData).sort((a, b) => a.localeCompare(b));
 
+  // MetaForge /traders returns only item arrays — no trader portrait fields; CDN paths return 404.
+  console.info('[RaiderPortal] No trader portrait assets available from MetaForge CDN — using initials avatars.');
+
   const cards = sorted.map((name) => {
     const inventory = tradersData[name] ?? [];
     const href = `#/trader/${encodeURIComponent(name.toLowerCase())}`;
     return `
       <a class="entity-card" href="${esc(href)}">
-        <div class="ec-icon-ph">🧑‍💼</div>
+        ${traderAvatar(name, 'avatar-card')}
         <div class="ec-name">${esc(name)}</div>
         <div class="ec-sub">${inventory.length} item${inventory.length !== 1 ? 's' : ''} in stock</div>
       </a>`;

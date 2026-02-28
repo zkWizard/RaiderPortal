@@ -11,6 +11,20 @@ import { normalizeBaseName, nameToSlug } from '../services/searchIndex.js';
 
 // ─── Utilities ────────────────────────────────────────────────
 
+// Derive a CSS slug + initials from a trader name (e.g. "TianWen" → "tianwen", "TW")
+function traderMeta(name) {
+  const slug = name.toLowerCase().replace(/\s+/g, '');
+  // Initials: capital letters only (e.g. "TianWen" → "TW"); fallback to first two chars
+  const caps = name.match(/[A-Z]/g);
+  const initials = caps && caps.length >= 2 ? caps.slice(0, 2).join('') : name.slice(0, 2).toUpperCase();
+  return { slug, initials };
+}
+
+function traderAvatar(name, sizeClass) {
+  const { slug, initials } = traderMeta(name);
+  return `<div class="trader-avatar ${sizeClass} trader-avatar--${slug}" aria-hidden="true">${initials}</div>`;
+}
+
 function esc(s) {
   return String(s ?? '')
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -45,6 +59,11 @@ export async function renderTrader(id, container) {
   const inventory = tradersData[traderName] ?? [];
   document.title = `${traderName} — RaiderPortal`;
 
+  // The MetaForge /traders endpoint returns only item arrays — no trader portrait/icon fields.
+  // All CDN paths (cdn.metaforge.app/arc-raiders/traders/*, /icons/*, /npcs/*) return 404.
+  // Falling back to styled initials avatars.
+  console.info(`[RaiderPortal] No portrait asset available for trader "${traderName}" — using initials avatar.`);
+
   const breadcrumb = `
     <nav class="detail-breadcrumb" aria-label="Breadcrumb">
       <a class="bc-link" href="#">Home</a>
@@ -57,7 +76,7 @@ export async function renderTrader(id, container) {
   const hero = `
     <div class="detail-hero">
       <div class="hero-icon-wrap">
-        <div class="hero-icon-placeholder">🧑‍💼</div>
+        ${traderAvatar(traderName, 'avatar-hero')}
       </div>
       <div class="hero-meta">
         <div class="hero-badges">
