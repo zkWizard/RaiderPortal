@@ -48,12 +48,59 @@ function bannerHeader(title, sub) {
 
 const RARITY_RANK = { Common: 0, Uncommon: 1, Rare: 2, Epic: 3, Legendary: 4 };
 
+// Maps every known item_type (lowercase) to one of the 6 display buckets.
+// Derived from the sets in itemPage.js plus weapon catch-all.
+const BUCKET_MAP = new Map([
+  // ── Blueprints ─────────────────────────────────────────
+  ['blueprint',         'Blueprints'],
+  ['recipe',            'Blueprints'],
+  // ── Armor ──────────────────────────────────────────────
+  ['armor',             'Armor'],
+  ['helmet',            'Armor'],
+  ['backpack',          'Armor'],
+  ['shield',            'Armor'],
+  ['chest armor',       'Armor'],
+  ['leg armor',         'Armor'],
+  ['body armor',        'Armor'],
+  ['utility',           'Armor'],
+  // ── Consumables (inc. grenades + quick-use) ────────────
+  ['consumable',        'Consumables'],
+  ['medical',           'Consumables'],
+  ['medical item',      'Consumables'],
+  ['medkit',            'Consumables'],
+  ['food',              'Consumables'],
+  ['drink',             'Consumables'],
+  ['grenade',           'Consumables'],
+  ['throwable',         'Consumables'],
+  ['explosive',         'Consumables'],
+  ['quick use',         'Consumables'],
+  // ── Attachments ────────────────────────────────────────
+  ['mod',               'Attachments'],
+  ['weapon mod',        'Attachments'],
+  ['attachment',        'Attachments'],
+  // ── Materials (inc. keys / cards) ──────────────────────
+  ['material',          'Materials'],
+  ['resource',          'Materials'],
+  ['component',         'Materials'],
+  ['crafting material', 'Materials'],
+  ['crafting resource', 'Materials'],
+  ['key',               'Materials'],
+  ['access card',       'Materials'],
+  ['keycard',           'Materials'],
+  ['card',              'Materials'],
+]);
+
+// Anything not in BUCKET_MAP is treated as a Weapon.
+function getBucket(itemType) {
+  if (!itemType) return 'Weapons';
+  return BUCKET_MAP.get(itemType.toLowerCase().trim()) ?? 'Weapons';
+}
+
+const BUCKET_LABELS = ['Weapons', 'Attachments', 'Consumables', 'Materials', 'Blueprints', 'Armor'];
+
 export async function renderItemsList(container) {
   const items = await fetchItems();
   document.title = 'Items — RaiderPortal';
-
-  // Derive unique categories from actual data (alphabetically sorted)
-  const categories = [...new Set(items.map((i) => i.item_type).filter(Boolean))].sort();
 
   // ── Filter bar ────────────────────────────────────────────────
   const filterBar = `
@@ -80,8 +127,8 @@ export async function renderItemsList(container) {
         </div>
       </div>
       <div class="item-filter-pills" id="itemFilterPills">
-        <button class="if-pill active" data-cat="">All</button>
-        ${categories.map((c) => `<button class="if-pill" data-cat="${esc(c)}">${esc(c)}</button>`).join('')}
+        <button class="if-pill active" data-bucket="">All</button>
+        ${BUCKET_LABELS.map((b) => `<button class="if-pill" data-bucket="${b}">${b}</button>`).join('')}
       </div>
     </div>`;
 
@@ -89,6 +136,7 @@ export async function renderItemsList(container) {
   function buildCard(item) {
     const href   = `#/item/${encodeURIComponent(nameToSlug(normalizeBaseName(item.name)))}`;
     const rarity = item.rarity ?? 'Common';
+    const bucket = getBucket(item.item_type);
     const weight = item.stat_block?.weight;
     const iconHtml = item.icon
       ? `<img class="ic-icon" src="${esc(item.icon)}" alt="" loading="lazy"
@@ -101,7 +149,7 @@ export async function renderItemsList(container) {
     return `
       <a class="item-card" href="${esc(href)}"
          data-name="${esc(item.name.toLowerCase())}"
-         data-cat="${esc(item.item_type ?? '')}"
+         data-bucket="${esc(bucket)}"
          data-rarity="${esc(rarity)}"
          data-value="${item.value ?? 0}">
         <div class="ic-icon-wrap">${iconHtml}</div>
@@ -126,13 +174,13 @@ export async function renderItemsList(container) {
     <div class="page-item">
       <div class="detail-banner">
         ${breadcrumb('Items')}
-        ${bannerHeader('Items', `${items.length.toLocaleString()} items · ${categories.length} categories`)}
+        ${bannerHeader('Items', `${items.length.toLocaleString()} items`)}
       </div>
       <div class="list-body">
         ${filterBar}
         <div class="item-grid" id="itemGrid">
           ${initialCards}
-          <p class="item-empty-msg" id="itemNoResults" hidden>No items match your filter.</p>
+          <p class="item-empty-msg" id="itemNoResults" style="display:none">No items match your filter.</p>
         </div>
       </div>
     </div>`;
@@ -143,18 +191,19 @@ export async function renderItemsList(container) {
   const pillsEl     = container.querySelector('#itemFilterPills');
   const gridEl      = container.querySelector('#itemGrid');
   const noResultsEl = container.querySelector('#itemNoResults');
-  const activeCategories = new Set();
+  let activeBucket  = '';  // '' = All
 
   function applyFilter() {
     const q = searchEl.value.trim().toLowerCase();
     let visible = 0;
     for (const card of gridEl.querySelectorAll('.item-card')) {
       const show = (!q || card.dataset.name.includes(q))
-                && (activeCategories.size === 0 || activeCategories.has(card.dataset.cat));
-      card.hidden = !show;
+                && (!activeBucket || card.dataset.bucket === activeBucket);
+      // Use inline style — overrides display:flex in author stylesheet
+      card.style.display = show ? '' : 'none';
       if (show) visible++;
     }
-    noResultsEl.hidden = visible > 0;
+    noResultsEl.style.display = visible > 0 ? 'none' : '';
   }
 
   function applySort() {
@@ -181,20 +230,11 @@ export async function renderItemsList(container) {
   pillsEl.addEventListener('click', (e) => {
     const pill = e.target.closest('.if-pill');
     if (!pill) return;
-    const cat = pill.dataset.cat;
-    if (cat === '') {
-      activeCategories.clear();
-      for (const p of pillsEl.querySelectorAll('.if-pill')) p.classList.remove('active');
-      pill.classList.add('active');
-    } else {
-      if (activeCategories.has(cat)) {
-        activeCategories.delete(cat);
-        pill.classList.remove('active');
-      } else {
-        activeCategories.add(cat);
-        pill.classList.add('active');
-      }
-      pillsEl.querySelector('[data-cat=""]').classList.toggle('active', activeCategories.size === 0);
+    const bucket = pill.dataset.bucket;
+    // Toggle: clicking the active bucket deselects it (returns to All)
+    activeBucket = activeBucket === bucket ? '' : bucket;
+    for (const p of pillsEl.querySelectorAll('.if-pill')) {
+      p.classList.toggle('active', p.dataset.bucket === activeBucket);
     }
     applyFilter();
   });
