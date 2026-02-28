@@ -92,7 +92,7 @@ body.no-transition .detail-view  { transition: none !important; }
   width: 80px;
   height: 80px;
   border-radius: 10px;
-  object-fit: cover;
+  object-fit: contain;
   background: var(--bg-base);
   border: 1px solid var(--border-bright);
   display: block;
@@ -314,7 +314,7 @@ body.no-transition .detail-view  { transition: none !important; }
   width: 36px;
   height: 36px;
   border-radius: 5px;
-  object-fit: cover;
+  object-fit: contain;
   background: var(--bg-void);
   flex-shrink: 0;
 }
