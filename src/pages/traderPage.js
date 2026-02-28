@@ -7,6 +7,7 @@
  */
 
 import { fetchTraders } from '../services/metaforgeApi.js';
+import { normalizeBaseName, nameToSlug } from '../services/searchIndex.js';
 
 // ─── Utilities ────────────────────────────────────────────────
 
@@ -14,6 +15,11 @@ function esc(s) {
   return String(s ?? '')
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+function itemLink(id, name) {
+  const slug = nameToSlug(normalizeBaseName(name));
+  return `<a href="#/item/${encodeURIComponent(slug)}">${esc(name)}</a>`;
 }
 
 function rarityClass(rarity) {
@@ -91,7 +97,7 @@ export async function renderTrader(id, container) {
           ${iconHtml}
           <div class="er-info">
             <div class="er-name">
-              <a href="#/item/${encodeURIComponent(item.id)}">${esc(item.name)}</a>
+              ${itemLink(item.id, item.name)}
             </div>
             <div class="er-sub">
               ${item.rarity ? `<span class="${rc}">${esc(item.rarity)}</span>` : ''}

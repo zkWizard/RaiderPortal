@@ -8,6 +8,7 @@
  */
 
 import { fetchQuests } from '../services/metaforgeApi.js';
+import { normalizeBaseName, nameToSlug } from '../services/searchIndex.js';
 
 // ─── Utilities ────────────────────────────────────────────────
 
@@ -18,7 +19,8 @@ function esc(s) {
 }
 
 function itemLink(id, name) {
-  return `<a href="#/item/${encodeURIComponent(id)}">${esc(name)}</a>`;
+  const slug = nameToSlug(normalizeBaseName(name));
+  return `<a href="#/item/${encodeURIComponent(slug)}">${esc(name)}</a>`;
 }
 
 function traderLink(name) {

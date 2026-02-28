@@ -1,14 +1,16 @@
 /**
  * itemPage.js
  *
- * Renders the detail page for a single item.
- * Data sourced from fetchItems() (full list, cached) and fetchTraders()
- * (cross-referenced to find which traders sell this item).
+ * Renders item detail pages. Tiered items (e.g. Tempest I/II/III/IV,
+ * Tempest Blueprint) share a single unified page at #/item/{baseSlug}
+ * with interactive tier tabs. Single-tier items render a standard layout.
  *
- * Layout: hero row + two-column body (main content + sidebar).
+ * Exported: renderItemGroup(slug, container)
+ *   slug — URL segment from the router (baseSlug or raw item id as fallback)
  */
 
 import { fetchItems, fetchTraders } from '../services/metaforgeApi.js';
+import { normalizeBaseName, nameToSlug } from '../services/searchIndex.js';
 
 // ─── Utilities ────────────────────────────────────────────────
 
@@ -19,7 +21,8 @@ function esc(s) {
 }
 
 function itemLink(id, name) {
-  return `<a href="#/item/${encodeURIComponent(id)}">${esc(name)}</a>`;
+  const slug = nameToSlug(normalizeBaseName(name));
+  return `<a href="#/item/${encodeURIComponent(slug)}">${esc(name)}</a>`;
 }
 
 function traderLink(name) {
@@ -89,7 +92,46 @@ const STAT_LABELS = {
   damageMult:                    'Damage Multiplier',
 };
 
-// ─── Section builders ─────────────────────────────────────────
+// ─── Tier utilities ────────────────────────────────────────────
+
+/**
+ * Extracts the tier/variant label from an item name, e.g.:
+ *   "Tempest III"       → "III"
+ *   "Tempest Blueprint" → "Blueprint"
+ *   "Wolfpack"          → null  (no tier)
+ */
+function getTierLabel(itemName) {
+  if (/\bBlueprint\b/i.test(itemName)) return 'Blueprint';
+  if (/\bRecipe\b/i.test(itemName))    return 'Recipe';
+  const mk = itemName.match(/\s+([Mm][Kk]\.\s*\d+)/);
+  if (mk) return mk[1];
+  const rv = itemName.match(/\s+(I{1,3}|IV|V)$/i);
+  if (rv) return rv[1].toUpperCase();
+  const n = itemName.match(/\s+(\d+)$/);
+  if (n) return n[1];
+  return null;
+}
+
+const TIER_ORDER = ['I', 'II', 'III', 'IV', 'V', '1', '2', '3', '4', '5', 'Blueprint', 'Recipe'];
+
+function sortItemsByTier(items) {
+  return [...items].sort((a, b) => {
+    const la = getTierLabel(a.name);
+    const lb = getTierLabel(b.name);
+    // Items with no tier label (base items) sort first
+    if (!la && !lb) return a.name.localeCompare(b.name);
+    if (!la) return -1;
+    if (!lb) return 1;
+    const ia = TIER_ORDER.indexOf(la);
+    const ib = TIER_ORDER.indexOf(lb);
+    if (ia !== -1 && ib !== -1) return ia - ib;
+    if (ia !== -1) return -1;
+    if (ib !== -1) return 1;
+    return la.localeCompare(lb);
+  });
+}
+
+// ─── Section builders ──────────────────────────────────────────
 
 function buildIconHtml(item) {
   if (item.icon) {
@@ -143,6 +185,20 @@ function buildStats(statBlock) {
     </div>`;
 }
 
+function buildCrafting(item) {
+  if (!item.workbench) return '';
+  return `
+    <div class="detail-section">
+      <div class="section-title">Crafting</div>
+      <div class="stat-grid">
+        <div class="stat-row">
+          <span class="stat-name">Workbench</span>
+          <span class="stat-val">${esc(item.workbench)}</span>
+        </div>
+      </div>
+    </div>`;
+}
+
 function buildLootAreas(lootArea) {
   if (!lootArea) return '';
   const areas = lootArea.split(',').map((s) => s.trim()).filter(Boolean);
@@ -166,53 +222,6 @@ function buildGuideLinks(links) {
     <div class="detail-section">
       <div class="section-title">External Guides</div>
       <div class="guide-links-list">${items}</div>
-    </div>`;
-}
-
-// ─── Tier navigation ──────────────────────────────────────
-// Detects items named "{Base} I/II/III/IV" and renders a nav strip
-// linking to the other tiers. Returns '' for non-tiered items.
-
-const TIER_RE = /^(.+?)\s+(I{1,3}|IV)$/;
-const TIER_LABELS = ['I', 'II', 'III', 'IV'];
-
-function buildTierNav(currentItem, allItems) {
-  const match = currentItem.name.match(TIER_RE);
-  if (!match) return '';
-
-  const baseName = match[1];
-  const tiers = TIER_LABELS
-    .map((t) => allItems.find((i) => i.name === `${baseName} ${t}`))
-    .filter(Boolean);
-
-  if (tiers.length < 2) return '';
-
-  const links = tiers.map((t) => {
-    if (t.id === currentItem.id) {
-      return `<span class="tier-current">${esc(match[2])}</span>`;
-    }
-    const tierLabel = t.name.match(TIER_RE)?.[2] ?? t.name;
-    return `<a class="tier-link" href="#/item/${encodeURIComponent(t.id)}">${esc(tierLabel)}</a>`;
-  }).join('');
-
-  return `
-    <div class="detail-section">
-      <div class="section-title">Tier Variants — ${esc(baseName)}</div>
-      <div class="tier-nav">${links}</div>
-    </div>`;
-}
-
-function buildCrafting(item) {
-  if (!item.workbench) return '';
-  return `
-    <div class="detail-section">
-      <div class="section-title">Crafting</div>
-      <div class="stat-grid">
-        <div class="stat-row">
-          <span class="stat-name">Workbench</span>
-          <span class="stat-val">${esc(item.workbench)}</span>
-        </div>
-      </div>
     </div>`;
 }
 
@@ -263,41 +272,10 @@ function buildSidebar(item, soldBy) {
   return html;
 }
 
-// ─── Main export ──────────────────────────────────────────────
+// ─── Per-item content block (reused as body of each tier panel) ─
 
-export async function renderItem(id, container) {
-  const [items, tradersData] = await Promise.all([
-    fetchItems(),
-    fetchTraders().catch(() => ({})),
-  ]);
-
-  const item = items.find((i) => i.id === id);
-  if (!item) {
-    container.innerHTML = `<div class="detail-not-found">Item "<strong>${esc(id)}</strong>" not found.</div>`;
-    return;
-  }
-
-  document.title = `${item.name} — RaiderPortal`;
-
-  // Find which traders sell this item
-  const soldBy = [];
-  for (const [traderName, inventory] of Object.entries(tradersData)) {
-    const listing = inventory.find((inv) => inv.id === id);
-    if (listing) soldBy.push({ name: traderName, price: listing.trader_price });
-  }
-
-  const breadcrumb = `
-    <nav class="detail-breadcrumb" aria-label="Breadcrumb">
-      <a class="bc-link" href="#">Home</a>
-      <span class="bc-sep">›</span>
-      <span class="bc-cat">Items</span>
-      <span class="bc-sep">›</span>
-      <span class="bc-current">${esc(item.name)}</span>
-    </nav>`;
-
+function buildItemContent(item, soldBy) {
   const mainContent = [
-    buildTierNav(item, items),
-
     item.description ? `
       <div class="detail-section">
         <div class="section-title">Description</div>
@@ -319,11 +297,104 @@ export async function renderItem(id, container) {
     buildGuideLinks(item.guide_links),
   ].filter(Boolean).join('');
 
-  container.innerHTML = `
-    ${breadcrumb}
+  return `
     ${buildHero(item)}
     <div class="detail-body">
       <div class="detail-main">${mainContent}</div>
       <div class="detail-sidebar">${buildSidebar(item, soldBy)}</div>
     </div>`;
+}
+
+// ─── Main export ───────────────────────────────────────────────
+
+export async function renderItemGroup(slug, container) {
+  const [items, tradersData] = await Promise.all([
+    fetchItems(),
+    fetchTraders().catch(() => ({})),
+  ]);
+
+  // Primary lookup: all items whose normalised base-name slug matches the URL segment
+  let group = items.filter(
+    (item) => nameToSlug(normalizeBaseName(item.name)) === slug
+  );
+
+  // Fallback: direct item-ID match (handles old-style URLs and deep links)
+  if (!group.length) {
+    const item = items.find((i) => i.id === slug);
+    if (item) group = [item];
+  }
+
+  if (!group.length) {
+    container.innerHTML = `<div class="detail-not-found">Item "<strong>${esc(slug)}</strong>" not found.</div>`;
+    return;
+  }
+
+  // Build a soldBy lookup keyed by item id
+  const soldByMap = new Map();
+  for (const [traderName, inventory] of Object.entries(tradersData)) {
+    for (const listing of inventory) {
+      const existing = soldByMap.get(listing.id) ?? [];
+      existing.push({ name: traderName, price: listing.trader_price });
+      soldByMap.set(listing.id, existing);
+    }
+  }
+
+  const sorted   = sortItemsByTier(group);
+  const baseName = normalizeBaseName(sorted[0].name);
+
+  const breadcrumb = `
+    <nav class="detail-breadcrumb" aria-label="Breadcrumb">
+      <a class="bc-link" href="#">Home</a>
+      <span class="bc-sep">›</span>
+      <span class="bc-cat">Items</span>
+      <span class="bc-sep">›</span>
+      <span class="bc-current">${esc(baseName)}</span>
+    </nav>`;
+
+  // ── Single-item path — no tier selector ───────────────────────
+  if (sorted.length === 1) {
+    const item   = sorted[0];
+    const soldBy = soldByMap.get(item.id) ?? [];
+    document.title = `${item.name} — RaiderPortal`;
+    container.innerHTML = `
+      ${breadcrumb}
+      ${buildItemContent(item, soldBy)}`;
+    return;
+  }
+
+  // ── Multi-tier path — tier tabs + swappable panels ─────────────
+  document.title = `${baseName} — RaiderPortal`;
+
+  const tierBtns = sorted.map((item, i) => {
+    const label = getTierLabel(item.name) ?? item.name;
+    return `<button class="tier-tab${i === 0 ? ' active' : ''}" data-ti="${i}">${esc(label)}</button>`;
+  }).join('');
+
+  const panels = sorted.map((item, i) => {
+    const soldBy = soldByMap.get(item.id) ?? [];
+    return `
+      <div class="tier-panel" data-panel="${i}"${i !== 0 ? ' hidden' : ''}>
+        ${buildItemContent(item, soldBy)}
+      </div>`;
+  }).join('');
+
+  container.innerHTML = `
+    ${breadcrumb}
+    <div class="unified-header">
+      <h1 class="unified-title">${esc(baseName)}</h1>
+      <div class="tier-nav">${tierBtns}</div>
+    </div>
+    ${panels}`;
+
+  // Wire up tab switching after innerHTML is set
+  const allBtns   = container.querySelectorAll('.tier-tab');
+  const allPanels = container.querySelectorAll('.tier-panel');
+
+  allBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.ti, 10);
+      allBtns.forEach((b, j)   => b.classList.toggle('active', j === idx));
+      allPanels.forEach((p, j) => { p.hidden = j !== idx; });
+    });
+  });
 }

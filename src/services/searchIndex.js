@@ -43,6 +43,44 @@ import {
  */
 
 // ─────────────────────────────────────────────────────────────────────────────
+// NAME NORMALISATION  (exported for use in page modules and index.html)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Strips tier/variant suffixes from an item name to produce a canonical base
+ * name used for grouping tiered items on a single unified detail page.
+ *
+ * Removes (in order):
+ *   • " Blueprint" or " Recipe"          → "Tempest Blueprint" → "Tempest"
+ *   • " MK. N" / " Mk.N" variations      → "Tactical MK. 3 (Revival)" → "Tactical (Revival)"
+ *   • Trailing Roman numeral I–V          → "Tempest IV" → "Tempest"
+ *   • Trailing bare digit 1–9            → "Anvil 3" → "Anvil"
+ *
+ * @param {string} name
+ * @returns {string}
+ */
+export function normalizeBaseName(name) {
+  return name
+    .replace(/\s+Blueprint\b/gi, '')
+    .replace(/\s+Recipe\b/gi,    '')
+    .replace(/\s+[Mm][Kk]\.\s*\d+/g, '')
+    .replace(/\s+(I{1,3}|IV|V)$/i, '')
+    .replace(/\s+\d+$/, '')
+    .trim();
+}
+
+/**
+ * Converts a display name to a URL-safe lowercase slug.
+ * e.g. "Medium Gun Parts" → "medium-gun-parts"
+ *
+ * @param {string} name
+ * @returns {string}
+ */
+export function nameToSlug(name) {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // MODULE STATE  (session-scoped, never persisted)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -90,15 +128,21 @@ function normalizeIcon(raw) {
  * @returns {IndexEntry[]}
  */
 function normalizeItems(items) {
-  return items.map((item) => ({
-    id:      item.id,
-    name:    item.name,
-    type:    'Item',
-    subtype: item.item_type ?? '',
-    rarity:  item.rarity ?? '',
-    icon:    normalizeIcon(item.icon),
-    rawData: item,
-  }));
+  return items.map((item) => {
+    const baseName = normalizeBaseName(item.name);
+    const baseSlug = nameToSlug(baseName);
+    return {
+      id:       item.id,
+      name:     item.name,
+      type:     'Item',
+      subtype:  item.item_type ?? '',
+      rarity:   item.rarity ?? '',
+      icon:     normalizeIcon(item.icon),
+      baseName,
+      baseSlug,
+      rawData:  item,
+    };
+  });
 }
 
 /**
