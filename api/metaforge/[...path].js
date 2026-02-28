@@ -14,8 +14,8 @@
 
 const UPSTREAM_BASE = 'https://metaforge.app/api';
 
-export default async function handler(req, res) {
-  // ── CORS — allow any origin (this is a public read-only data proxy) ────
+module.exports = async function handler(req, res) {
+  // ── CORS — allow any origin (public read-only data proxy) ─────────────
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept');
@@ -35,13 +35,12 @@ export default async function handler(req, res) {
   const segments = req.query.path;
   const upstreamPath = Array.isArray(segments)
     ? segments.join('/')
-    : (segments ?? '');
+    : (segments || '');
 
   // Forward all query params except the internal 'path' routing key
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(req.query)) {
     if (key === 'path') continue; // injected by Vercel routing, not a real param
-    // URLSearchParams handles repeated keys; Vercel may give arrays for those
     if (Array.isArray(value)) {
       value.forEach((v) => params.append(key, v));
     } else {
@@ -76,7 +75,6 @@ export default async function handler(req, res) {
   try {
     body = await upstream.json();
   } catch {
-    // MetaForge returned non-JSON (shouldn't happen, but handle it)
     return res.status(upstream.status).json({
       error:   'invalid_upstream_response',
       message: 'MetaForge returned a non-JSON response.',
@@ -87,4 +85,4 @@ export default async function handler(req, res) {
 
   res.setHeader('Content-Type', 'application/json');
   return res.status(upstream.status).json(body);
-}
+};
