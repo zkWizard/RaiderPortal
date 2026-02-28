@@ -229,11 +229,17 @@ export async function buildIndex({ forceRefresh = false } = {}) {
 // SCORING
 // ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * Returns true if any whitespace-delimited word in `nameLower` starts with `queryLower`.
+ * Checks ALL words including the first, so "gun" matches both "Gun Rack" (word 0)
+ * and "Medium Gun Parts" (word 1).
+ *
+ * @param {string} nameLower
+ * @param {string} queryLower
+ * @returns {boolean}
+ */
 function anyWordStartsWith(nameLower, queryLower) {
-  const spaceIndex = nameLower.indexOf(' ');
-  if (spaceIndex === -1) return false;
-
-  let wordStart = spaceIndex + 1;
+  let wordStart = 0;
   while (wordStart < nameLower.length) {
     const nextSpace = nameLower.indexOf(' ', wordStart);
     const wordEnd = nextSpace === -1 ? nameLower.length : nextSpace;
@@ -248,19 +254,20 @@ function anyWordStartsWith(nameLower, queryLower) {
 }
 
 /**
- * Score tiers (lower = better):
- *   0 — exact match
- *   1 — name starts with query
- *   2 — any interior word starts with query
- *   3 — name contains query anywhere
- *   Infinity — no match
+ * Scores how well a name matches a query. Higher score = better match.
+ *
+ * Tier 1 — Exact match            → 100
+ * Tier 2 — Name starts with query → 75
+ * Tier 3 — Any word starts with query → 50
+ * Tier 4 — Name contains query anywhere → 25
+ * No match → 0
  */
 function scoreMatch(nameLower, queryLower) {
-  if (nameLower === queryLower)                 return 0;
-  if (nameLower.startsWith(queryLower))         return 1;
-  if (anyWordStartsWith(nameLower, queryLower)) return 2;
-  if (nameLower.includes(queryLower))           return 3;
-  return Infinity;
+  if (nameLower === queryLower)                 return 100;
+  if (nameLower.startsWith(queryLower))         return 75;
+  if (anyWordStartsWith(nameLower, queryLower)) return 50;
+  if (nameLower.includes(queryLower))           return 25;
+  return 0;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -268,13 +275,24 @@ function scoreMatch(nameLower, queryLower) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Searches the in-memory index and returns ranked matches.
+ * Searches the in-memory index and returns ranked results.
+ *
+ * Ranking (best → worst):
+ *   100 — Exact match
+ *    75 — Name starts with query
+ *    50 — Any word in name starts with query
+ *    25 — Name contains query anywhere
+ * Within each tier, results are sorted A→Z by name.
+ *
+ * Returns an empty array (no warning) if the query is fewer than 2 characters.
  *
  * @param {string} query  Raw search string from the user
  * @param {{ limit?: number, type?: 'Item'|'ARC'|'Quest'|'Trader' }} [opts]
+ *   limit — max results (default 25)
+ *   type  — restrict to a single entity type
  * @returns {IndexEntry[]}
  */
-export function search(query, { limit = 50, type } = {}) {
+export function search(query, { limit = 25, type } = {}) {
   if (_state !== 'ready') {
     console.warn(
       _state === 'loading'
@@ -285,18 +303,19 @@ export function search(query, { limit = 50, type } = {}) {
   }
 
   const q = query.trim().toLowerCase();
-  if (!q) return [];
+  if (q.length < 2) return [];
 
   const pool = type ? _index.filter((e) => e.type === type) : _index;
   const scored = [];
 
   for (const entry of pool) {
     const s = scoreMatch(entry.name.toLowerCase(), q);
-    if (s < Infinity) scored.push({ entry, score: s });
+    if (s > 0) scored.push({ entry, score: s });
   }
 
+  // Higher score first; alphabetical tiebreaker within each tier
   scored.sort((a, b) =>
-    a.score !== b.score ? a.score - b.score : a.entry.name.localeCompare(b.entry.name)
+    a.score !== b.score ? b.score - a.score : a.entry.name.localeCompare(b.entry.name)
   );
 
   return scored.slice(0, limit).map((r) => r.entry);
