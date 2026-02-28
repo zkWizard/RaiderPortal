@@ -117,7 +117,7 @@ function buildHero(item) {
         </div>
         <h1 class="hero-name">${esc(item.name)}</h1>
         <div class="hero-sub">
-          Base value: <strong>${(item.value ?? 0).toLocaleString()}</strong>
+          Base value: <strong>${(item.value ?? 0).toLocaleString()} Raider Coins</strong>
         </div>
       </div>
     </div>`;
@@ -199,6 +199,20 @@ function buildTierNav(currentItem, allItems) {
     <div class="detail-section">
       <div class="section-title">Tier Variants — ${esc(baseName)}</div>
       <div class="tier-nav">${links}</div>
+    </div>`;
+}
+
+function buildCrafting(item) {
+  if (!item.workbench) return '';
+  return `
+    <div class="detail-section">
+      <div class="section-title">Crafting</div>
+      <div class="stat-grid">
+        <div class="stat-row">
+          <span class="stat-name">Workbench</span>
+          <span class="stat-val">${esc(item.workbench)}</span>
+        </div>
+      </div>
     </div>`;
 }
 
@@ -297,6 +311,8 @@ export async function renderItem(id, container) {
       </div>` : '',
 
     buildStats(item.stat_block),
+
+    buildCrafting(item),
 
     buildLootAreas(item.loot_area),
 
