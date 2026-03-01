@@ -1,0 +1,116 @@
+[
+  {
+    "id": "wasp",
+    "name": "Wasp",
+    "updatedAt": "2025-10-23T12:37:58.471Z",
+    "icon": "/arc/icons/wasp.svg"
+  },
+  {
+    "id": "hornet",
+    "name": "Hornet",
+    "updatedAt": "2025-10-20T10:12:20.202Z",
+    "icon": "/arc/icons/hornet.svg"
+  },
+  {
+    "id": "firefly",
+    "name": "Firefly",
+    "updatedAt": "2026-02-24T12:18:29.206Z",
+    "icon": "/arc/icons/snitch.svg"
+  },
+  {
+    "id": "snitch",
+    "name": "Snitch",
+    "updatedAt": "2025-10-20T10:12:20.202Z",
+    "icon": "/arc/icons/snitch.svg"
+  },
+  {
+    "id": "tick",
+    "name": "Tick",
+    "updatedAt": "2025-10-20T10:12:20.202Z",
+    "icon": "/arc/icons/tick.svg"
+  },
+  {
+    "id": "pop",
+    "name": "Pop",
+    "updatedAt": "2025-10-20T10:12:20.202Z",
+    "icon": "/arc/icons/pop.svg"
+  },
+  {
+    "id": "fireball",
+    "name": "Fireball",
+    "updatedAt": "2025-10-20T10:12:20.202Z",
+    "icon": "/arc/icons/fireball.svg"
+  },
+  {
+    "id": "comet",
+    "name": "Comet",
+    "updatedAt": "2026-02-24T12:18:29.206Z",
+    "icon": "/arc/icons/comet.svg"
+  },
+  {
+    "id": "surveyor",
+    "name": "Surveyor",
+    "updatedAt": "2025-10-20T10:12:20.202Z",
+    "icon": "/arc/icons/surveyor.svg"
+  },
+  {
+    "id": "turret",
+    "name": "Turret",
+    "updatedAt": "2025-10-26T12:34:06.331Z",
+    "icon": "/arc/icons/turret.svg"
+  },
+  {
+    "id": "sentinel",
+    "name": "Sentinel",
+    "updatedAt": "2025-10-26T12:34:06.331Z",
+    "icon": "/arc/icons/sentinel.svg"
+  },
+  {
+    "id": "rocketeer",
+    "name": "Rocketeer",
+    "updatedAt": "2025-10-23T12:37:58.471Z",
+    "icon": "/arc/icons/rocketeer.svg"
+  },
+  {
+    "id": "bastion",
+    "name": "Bastion",
+    "updatedAt": "2025-10-20T10:12:20.202Z",
+    "icon": "/arc/icons/bastion.svg"
+  },
+  {
+    "id": "bombardier",
+    "name": "Bombardier",
+    "updatedAt": "2025-10-23T12:37:58.471Z",
+    "icon": "/arc/icons/bombardier.svg"
+  },
+  {
+    "id": "spotter",
+    "name": "Spotter",
+    "updatedAt": "2025-11-20T15:19:41.529Z",
+    "icon": "/arc/icons/spotter.svg"
+  },
+  {
+    "id": "leaper",
+    "name": "Leaper",
+    "updatedAt": "2025-10-23T12:37:58.471Z",
+    "icon": "/arc/icons/leaper.svg"
+  },
+  {
+    "id": "queen",
+    "name": "Queen",
+    "updatedAt": "2025-10-20T10:12:20.202Z",
+    "icon": "/arc/icons/queen.svg"
+  },
+  {
+    "id": "matriarch",
+    "name": "Matriarch",
+    "updatedAt": "2025-12-13T17:18:44.079Z",
+    "icon": "/arc/icons/matriarch.svg"
+  },
+  {
+    "id": "shredder",
+    "name": "Shredder",
+    "updatedAt": "2025-11-15T18:53:20.022Z",
+    "icon": "/arc/icons/shredder.svg"
+  }
+]

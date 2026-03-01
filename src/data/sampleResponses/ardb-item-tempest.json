@@ -1,0 +1,382 @@
+{
+  "updatedAt": "2025-10-28T15:02:45.057Z",
+  "id": "tempest",
+  "foundIn": [],
+  "name": "Tempest I",
+  "rarity": "epic",
+  "stackSize": 1,
+  "type": "assault rifle",
+  "value": 13000,
+  "weight": 11,
+  "weaponSpecs": {
+    "ammoType": "medium",
+    "bonuses": {},
+    "magSize": 25,
+    "stats": {
+      "damage": 10,
+      "range": 55.9,
+      "agility": 50,
+      "fireRate": 36.7,
+      "stability": 79.9,
+      "stealth": 14
+    },
+    "armorPenetration": "moderate",
+    "firingMode": "fully-automatic"
+  },
+  "description": "Has moderate fire rate and accuracy.",
+  "breaksInto": [
+    {
+      "item": {
+        "rarity": "rare",
+        "name": "Advanced Mechanical Components",
+        "id": "advanced_mechanical_components",
+        "foundIn": [
+          "mechanical"
+        ],
+        "type": "refined material",
+        "value": 1750,
+        "icon": "/items/icons/advanced_mechanical_components.webp",
+        "updatedAt": "2025-10-31T07:10:25.404Z"
+      },
+      "amount": 2
+    },
+    {
+      "item": {
+        "rarity": "rare",
+        "name": "Medium Gun Parts",
+        "id": "medium_gun_parts",
+        "foundIn": [
+          "raider",
+          "security"
+        ],
+        "type": "topside material",
+        "value": 700,
+        "icon": "/items/icons/medium_gun_parts.webp",
+        "updatedAt": "2025-10-24T18:58:13.099Z"
+      },
+      "amount": 2
+    }
+  ],
+  "craftingRequirement": {
+    "outputAmount": 1,
+    "requiredItems": [
+      {
+        "item": {
+          "rarity": "epic",
+          "name": "Magnetic Accelerator",
+          "id": "magnetic_accelerator",
+          "foundIn": [
+            "exodus"
+          ],
+          "type": "refined material",
+          "value": 5500,
+          "icon": "/items/icons/magnetic_accelerator.webp",
+          "updatedAt": "2025-11-07T21:30:46.131Z"
+        },
+        "amount": 1
+      },
+      {
+        "item": {
+          "rarity": "rare",
+          "name": "Medium Gun Parts",
+          "id": "medium_gun_parts",
+          "foundIn": [
+            "raider",
+            "security"
+          ],
+          "type": "topside material",
+          "value": 700,
+          "icon": "/items/icons/medium_gun_parts.webp",
+          "updatedAt": "2025-10-24T18:58:13.099Z"
+        },
+        "amount": 3
+      },
+      {
+        "item": {
+          "rarity": "epic",
+          "name": "Exodus Modules",
+          "id": "exodus_modules",
+          "foundIn": [
+            "exodus"
+          ],
+          "type": "topside material",
+          "value": 2750,
+          "icon": "/items/images/exodus_modules.webp",
+          "updatedAt": "2025-11-09T01:49:11.032Z"
+        },
+        "amount": 2
+      }
+    ],
+    "blueprint": {
+      "updatedAt": "2025-11-16T14:30:39.690Z",
+      "id": "tempest_blueprint",
+      "name": "Tempest Blueprint",
+      "foundIn": [],
+      "rarity": null,
+      "stackSize": 1,
+      "type": "blueprint",
+      "value": 5000,
+      "weight": 0,
+      "description": "Has moderate fire rate and accuracy.",
+      "icon": "/items/icons/recipe.webp",
+      "image": "/items/images/recipe.webp",
+      "blueprintFor": "tempest"
+    },
+    "station": {
+      "id": "weapon_bench",
+      "tier": 3
+    }
+  },
+  "image": "/items/images/tempest.webp",
+  "icon": "/items/icons/tempest.webp",
+  "sources": [
+    "sources/items/tempest/inspect.webp"
+  ],
+  "usedInCraft": [
+    {
+      "rarity": "epic",
+      "name": "Tempest II",
+      "id": "tempest_t2",
+      "foundIn": [],
+      "type": "assault rifle",
+      "value": 17000,
+      "icon": "/items/icons/tempest.webp",
+      "updatedAt": "2025-11-10T01:05:20.293Z"
+    }
+  ],
+  "compatibleWith": [
+    {
+      "rarity": "common",
+      "name": "Compensator I",
+      "id": "compensator_t1",
+      "foundIn": [],
+      "type": "modification",
+      "value": 640,
+      "icon": "/items/icons/compensator_t1.webp",
+      "updatedAt": "2026-02-16T15:39:54.140Z"
+    },
+    {
+      "rarity": "uncommon",
+      "name": "Compensator II",
+      "id": "compensator_t2",
+      "foundIn": [],
+      "type": "modification",
+      "value": 2000,
+      "icon": "/items/icons/compensator_t2.webp",
+      "updatedAt": "2026-02-16T15:39:54.140Z"
+    },
+    {
+      "rarity": "rare",
+      "name": "Compensator III",
+      "id": "compensator_t3",
+      "foundIn": [],
+      "type": "modification",
+      "value": 5000,
+      "icon": "/items/icons/compensator_t3.webp",
+      "updatedAt": "2026-02-16T15:39:54.140Z"
+    },
+    {
+      "rarity": "epic",
+      "name": "Extended Barrel",
+      "id": "extended_barrel",
+      "foundIn": [],
+      "type": "modification",
+      "value": 5000,
+      "icon": "/items/icons/extended_barrel.webp",
+      "updatedAt": "2026-02-16T15:39:54.140Z"
+    },
+    {
+      "rarity": "common",
+      "name": "Extended Medium Mag I",
+      "id": "extended_medium_mag_t1",
+      "foundIn": [],
+      "type": "modification",
+      "value": 640,
+      "icon": "/items/icons/extended_medium_mag_t1.webp",
+      "updatedAt": "2025-11-01T23:46:47.978Z"
+    },
+    {
+      "rarity": "uncommon",
+      "name": "Extended Medium Mag II",
+      "id": "extended_medium_mag_t2",
+      "foundIn": [],
+      "type": "modification",
+      "value": 2000,
+      "icon": "/items/icons/extended_medium_mag_t2.webp",
+      "updatedAt": "2025-11-03T18:00:27.147Z"
+    },
+    {
+      "rarity": "rare",
+      "name": "Extended Medium Mag III",
+      "id": "extended_medium_mag_t3",
+      "foundIn": [],
+      "type": "modification",
+      "value": 5000,
+      "icon": "/items/icons/extended_medium_mag_t3.webp",
+      "updatedAt": "2025-11-01T23:46:47.978Z"
+    },
+    {
+      "rarity": "epic",
+      "name": "Horizontal Grip",
+      "id": "horizontal_grip",
+      "foundIn": [],
+      "type": "modification",
+      "value": 7000,
+      "icon": "/items/icons/horizontal_grip.webp",
+      "updatedAt": "2026-02-16T15:39:54.140Z"
+    },
+    {
+      "rarity": "epic",
+      "name": "Lightweight Stock",
+      "id": "lightweight_stock",
+      "foundIn": [],
+      "type": "modification",
+      "value": 5000,
+      "icon": "/items/icons/lightweight_stock.webp",
+      "updatedAt": "2026-02-16T16:16:16.901Z"
+    },
+    {
+      "rarity": "common",
+      "name": "Medium Ammo",
+      "id": "medium_ammo",
+      "foundIn": [],
+      "type": "ammunition",
+      "value": 6,
+      "icon": "/items/icons/medium_ammo.webp",
+      "updatedAt": "2025-10-20T11:29:16.330Z"
+    },
+    {
+      "rarity": "common",
+      "name": "Muzzle Brake I",
+      "id": "muzzle_brake_t1",
+      "foundIn": [],
+      "type": "modification",
+      "value": 640,
+      "icon": "/items/icons/muzzle_brake_t1.webp",
+      "updatedAt": "2026-02-16T16:16:16.901Z"
+    },
+    {
+      "rarity": "uncommon",
+      "name": "Muzzle Brake II",
+      "id": "muzzle_brake_t2",
+      "foundIn": [],
+      "type": "modification",
+      "value": 2000,
+      "icon": "/items/icons/muzzle_brake_t2.webp",
+      "updatedAt": "2026-02-16T16:16:16.901Z"
+    },
+    {
+      "rarity": "rare",
+      "name": "Muzzle Brake III",
+      "id": "muzzle_brake_t3",
+      "foundIn": [],
+      "type": "modification",
+      "value": 5000,
+      "icon": "/items/icons/muzzle_brake_t3.webp",
+      "updatedAt": "2026-02-16T16:16:16.901Z"
+    },
+    {
+      "rarity": "epic",
+      "name": "Padded Stock",
+      "id": "padded_stock",
+      "foundIn": [],
+      "type": "modification",
+      "value": 5000,
+      "icon": "/items/icons/padded_stock.webp",
+      "updatedAt": "2026-02-16T16:16:16.901Z"
+    },
+    {
+      "rarity": "uncommon",
+      "name": "Stable Stock II",
+      "id": "stable_stock_t2",
+      "foundIn": [],
+      "type": "modification",
+      "value": 2000,
+      "icon": "/items/icons/stable_stock_t2.webp",
+      "updatedAt": "2026-02-16T16:16:16.901Z"
+    },
+    {
+      "rarity": "rare",
+      "name": "Stable Stock III",
+      "id": "stable_stock_t3",
+      "foundIn": [],
+      "type": "modification",
+      "value": 5000,
+      "icon": "/items/icons/stable_stock_t3.webp",
+      "updatedAt": "2026-02-16T16:16:16.901Z"
+    },
+    {
+      "rarity": "common",
+      "name": "Vertical Grip I",
+      "id": "vertical_grip_t1",
+      "foundIn": [],
+      "type": "modification",
+      "value": 640,
+      "icon": "/items/icons/vertical_grip_t1.webp",
+      "updatedAt": "2025-11-07T12:46:10.427Z"
+    },
+    {
+      "rarity": "uncommon",
+      "name": "Vertical Grip II",
+      "id": "vertical_grip_t2",
+      "foundIn": [],
+      "type": "modification",
+      "value": 2000,
+      "icon": "/items/icons/vertical_grip_t2.webp",
+      "updatedAt": "2025-11-11T14:48:15.418Z"
+    },
+    {
+      "rarity": "rare",
+      "name": "Vertical Grip III",
+      "id": "vertical_grip_t3",
+      "foundIn": [],
+      "type": "modification",
+      "value": 5000,
+      "icon": "/items/icons/vertical_grip_t3.webp",
+      "updatedAt": "2025-11-07T12:46:10.427Z"
+    }
+  ],
+  "variants": [
+    {
+      "rarity": "epic",
+      "name": "Tempest I",
+      "id": "tempest",
+      "foundIn": [],
+      "type": "assault rifle",
+      "value": 13000,
+      "icon": "/items/icons/tempest.webp",
+      "updatedAt": "2025-10-28T15:02:45.057Z"
+    },
+    {
+      "rarity": "epic",
+      "name": "Tempest II",
+      "id": "tempest_t2",
+      "foundIn": [],
+      "type": "assault rifle",
+      "value": 17000,
+      "icon": "/items/icons/tempest.webp",
+      "updatedAt": "2025-11-10T01:05:20.293Z"
+    },
+    {
+      "rarity": "epic",
+      "name": "Tempest III",
+      "id": "tempest_t3",
+      "foundIn": [],
+      "type": "assault rifle",
+      "value": 22000,
+      "icon": "/items/icons/tempest.webp",
+      "updatedAt": "2025-11-10T01:05:20.293Z"
+    },
+    {
+      "rarity": "epic",
+      "name": "Tempest IV",
+      "id": "tempest_t4",
+      "foundIn": [],
+      "type": "assault rifle",
+      "value": 27000,
+      "icon": "/items/icons/tempest.webp",
+      "updatedAt": "2025-11-10T01:05:20.293Z"
+    }
+  ],
+  "maps": []
+}

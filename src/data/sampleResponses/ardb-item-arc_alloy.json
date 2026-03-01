@@ -1,0 +1,570 @@
+{
+  "updatedAt": "2025-10-20T11:29:16.330Z",
+  "id": "arc_alloy",
+  "foundIn": [
+    "ARC"
+  ],
+  "name": "ARC Alloy",
+  "rarity": "uncommon",
+  "stackSize": 15,
+  "type": "topside material",
+  "value": 200,
+  "weight": 0.25,
+  "breaksInto": [
+    {
+      "item": {
+        "rarity": "common",
+        "name": "Metal Parts",
+        "id": "metal_parts",
+        "foundIn": [
+          "mechanical",
+          "industrial",
+          "electrical",
+          "technological"
+        ],
+        "type": "basic material",
+        "value": 75,
+        "icon": "/items/icons/metal_parts.webp",
+        "updatedAt": "2025-10-24T16:14:20.651Z"
+      },
+      "amount": 2
+    }
+  ],
+  "description": "Obtained from ARC enemies or activities, or by recycling certain ARC parts. Used to craft components.",
+  "icon": "/items/icons/arc_alloy.webp",
+  "image": "/items/images/arc_alloy.webp",
+  "sources": [
+    "sources/items/arc_alloy/inspect.webp"
+  ],
+  "usedInCraft": [
+    {
+      "rarity": "uncommon",
+      "name": "Light Shield",
+      "id": "light_shield",
+      "foundIn": [],
+      "type": "shield",
+      "value": 640,
+      "icon": "/items/icons/light_shield.webp",
+      "updatedAt": "2025-10-29T18:50:43.171Z"
+    },
+    {
+      "rarity": "common",
+      "name": "Seeker Grenade",
+      "id": "seeker_grenade",
+      "foundIn": [],
+      "type": "quick use",
+      "value": 640,
+      "icon": "/items/icons/seeker_grenade.webp",
+      "updatedAt": "2025-12-16T17:55:05.634Z"
+    },
+    {
+      "rarity": "rare",
+      "name": "ARC Circuitry",
+      "id": "arc_circuitry",
+      "foundIn": [
+        "ARC"
+      ],
+      "type": "topside material",
+      "value": 1000,
+      "icon": "/items/icons/arc_circuitry.webp",
+      "updatedAt": "2025-10-31T07:10:25.404Z"
+    },
+    {
+      "rarity": "rare",
+      "name": "ARC Motion Core",
+      "id": "arc_motion_core",
+      "foundIn": [
+        "ARC"
+      ],
+      "type": "topside material",
+      "value": 1000,
+      "icon": "/items/icons/arc_motion_core.webp",
+      "updatedAt": "2025-11-13T09:39:23.122Z"
+    }
+  ],
+  "obtainedFrom": [
+    {
+      "item": {
+        "rarity": "rare",
+        "name": "ARC Circuitry",
+        "id": "arc_circuitry",
+        "foundIn": [
+          "ARC"
+        ],
+        "type": "topside material",
+        "value": 1000,
+        "icon": "/items/icons/arc_circuitry.webp",
+        "updatedAt": "2025-10-31T07:10:25.404Z"
+      },
+      "amount": 2
+    },
+    {
+      "item": {
+        "rarity": "rare",
+        "name": "ARC Motion Core",
+        "id": "arc_motion_core",
+        "foundIn": [
+          "ARC"
+        ],
+        "type": "topside material",
+        "value": 1000,
+        "icon": "/items/icons/arc_motion_core.webp",
+        "updatedAt": "2025-11-13T09:39:23.122Z"
+      },
+      "amount": 2
+    },
+    {
+      "item": {
+        "rarity": "epic",
+        "name": "Bastion Cell",
+        "id": "bastion_cell",
+        "foundIn": [
+          "ARC"
+        ],
+        "type": "recyclable",
+        "value": 5000,
+        "icon": "/items/icons/bastion_cell.webp",
+        "updatedAt": "2025-10-20T11:29:16.330Z"
+      },
+      "amount": 2
+    },
+    {
+      "item": {
+        "rarity": "epic",
+        "name": "Bombardier Cell",
+        "id": "bombardier_cell",
+        "foundIn": [
+          "ARC"
+        ],
+        "type": "recyclable",
+        "value": 5000,
+        "icon": "/items/icons/bombardier_cell.webp",
+        "updatedAt": "2025-10-20T11:29:16.330Z"
+      },
+      "amount": 2
+    },
+    {
+      "item": {
+        "rarity": "uncommon",
+        "name": "Burned ARC Circuitry",
+        "id": "burned_arc_circuit",
+        "foundIn": [
+          "ARC"
+        ],
+        "type": "recyclable",
+        "value": 640,
+        "icon": "/items/icons/burned_arc_circuitry.webp",
+        "updatedAt": "2025-10-20T11:29:16.330Z"
+      },
+      "amount": 2
+    },
+    {
+      "item": {
+        "rarity": "rare",
+        "name": "Comet Igniter",
+        "id": "comet_igniter",
+        "foundIn": [
+          "ARC"
+        ],
+        "type": "recyclable",
+        "value": 1000,
+        "updatedAt": "2026-02-24T12:18:29.206Z"
+      },
+      "amount": 2
+    },
+    {
+      "item": {
+        "rarity": "uncommon",
+        "name": "Damaged Arc Motion Core",
+        "id": "damaged_arc_motion_core",
+        "foundIn": [
+          "ARC"
+        ],
+        "type": "recyclable",
+        "value": 640,
+        "updatedAt": "2025-10-20T11:29:16.330Z"
+      },
+      "amount": 2
+    },
+    {
+      "item": {
+        "rarity": "uncommon",
+        "name": "Damaged Arc Powercell",
+        "id": "damaged_arc_powercell",
+        "foundIn": [
+          "ARC"
+        ],
+        "type": "recyclable",
+        "value": 293,
+        "icon": "/items/icons/damaged_arc_powercell.webp",
+        "updatedAt": "2025-09-07T17:18:28.842Z"
+      },
+      "amount": 1
+    },
+    {
+      "item": {
+        "rarity": "common",
+        "name": "Damaged Rocketeer Driver",
+        "id": "damaged_rocketeer_driver",
+        "foundIn": [
+          "ARC"
+        ],
+        "type": "recyclable",
+        "value": 2000,
+        "icon": "/items/images/damaged_rocketeer_driver.webp",
+        "updatedAt": "2025-10-20T11:29:16.330Z"
+      },
+      "amount": 3
+    },
+    {
+      "item": {
+        "rarity": "common",
+        "name": "Damaged Tick Pod",
+        "id": "damaged_tick_pod",
+        "foundIn": [
+          "ARC"
+        ],
+        "type": "recyclable",
+        "value": 270,
+        "icon": "/items/icons/damaged_tick_pod.webp",
+        "updatedAt": "2025-10-20T11:29:16.330Z"
+      },
+      "amount": 1
+    },
+    {
+      "item": {
+        "rarity": "uncommon",
+        "name": "Fireball Burner",
+        "id": "fireball_burner",
+        "foundIn": [
+          "ARC"
+        ],
+        "type": "recyclable",
+        "value": 640,
+        "icon": "/items/icons/fireball_burner.webp",
+        "updatedAt": "2025-10-20T11:29:16.330Z"
+      },
+      "amount": 1
+    },
+    {
+      "item": {
+        "rarity": "rare",
+        "name": "Firefly Burner",
+        "id": "firefly_burner",
+        "foundIn": [
+          "ARC"
+        ],
+        "type": "recyclable",
+        "value": 1000,
+        "updatedAt": "2026-02-24T12:18:29.206Z"
+      },
+      "amount": 2
+    },
+    {
+      "item": {
+        "rarity": "rare",
+        "name": "Hornet Driver",
+        "id": "hornet_driver",
+        "foundIn": [
+          "ARC"
+        ],
+        "type": "recyclable",
+        "value": 2000,
+        "icon": "/items/icons/hornet_driver.webp",
+        "updatedAt": "2025-10-20T11:29:16.330Z"
+      },
+      "amount": 2
+    },
+    {
+      "item": {
+        "rarity": "epic",
+        "name": "Leaper Pulse Unit",
+        "id": "leaper_pulse_unit",
+        "foundIn": [
+          "ARC"
+        ],
+        "type": "recyclable",
+        "value": 5000,
+        "icon": "/items/icons/leaper_pulse_unit.webp",
+        "updatedAt": "2025-10-20T11:29:16.330Z"
+      },
+      "amount": 3
+    },
+    {
+      "item": {
+        "rarity": "common",
+        "name": "Pop Trigger",
+        "id": "pop_trigger",
+        "foundIn": [
+          "ARC"
+        ],
+        "type": "recyclable",
+        "value": 640,
+        "icon": "/items/icons/pop_trigger.webp",
+        "updatedAt": "2025-10-20T11:29:16.330Z"
+      },
+      "amount": 1
+    },
+    {
+      "item": {
+        "rarity": "epic",
+        "name": "Rocketeer Driver",
+        "id": "rocketeer_driver",
+        "foundIn": [
+          "ARC"
+        ],
+        "type": "recyclable",
+        "value": 5000,
+        "icon": "/items/icons/rocketeer_driver.webp",
+        "updatedAt": "2025-10-20T11:29:16.330Z"
+      },
+      "amount": 3
+    },
+    {
+      "item": {
+        "rarity": "rare",
+        "name": "Sentinel Firing Core",
+        "id": "sentinel_firing_core",
+        "foundIn": [
+          "ARC"
+        ],
+        "type": "recyclable",
+        "value": 3000,
+        "icon": "/items/icons/sentinel_firing_core.webp",
+        "updatedAt": "2025-10-20T11:29:16.330Z"
+      },
+      "amount": 2
+    },
+    {
+      "item": {
+        "rarity": "rare",
+        "name": "Shredder Gyro",
+        "id": "shredder_gyro",
+        "foundIn": [
+          "ARC"
+        ],
+        "type": "recyclable",
+        "value": 3000,
+        "icon": "/items/icons/shredder_gyro.webp",
+        "updatedAt": "2025-12-23T16:13:21.697Z"
+      },
+      "amount": 3
+    },
+    {
+      "item": {
+        "rarity": "uncommon",
+        "name": "Snitch Scanner",
+        "id": "snitch_scanner",
+        "foundIn": [
+          "ARC"
+        ],
+        "type": "recyclable",
+        "value": 2000,
+        "icon": "/items/icons/snitch_scanner.webp",
+        "updatedAt": "2025-10-20T11:29:16.330Z"
+      },
+      "amount": 1
+    },
+    {
+      "item": {
+        "rarity": "uncommon",
+        "name": "Spotter Relay",
+        "id": "spotter_relay",
+        "foundIn": [
+          "ARC"
+        ],
+        "type": "recyclable",
+        "value": 2000,
+        "icon": "/items/icons/spotter_relay.webp",
+        "updatedAt": "2025-11-13T09:39:23.122Z"
+      },
+      "amount": 1
+    },
+    {
+      "item": {
+        "rarity": "rare",
+        "name": "Surveyor Vault",
+        "id": "surveyor_vault",
+        "foundIn": [
+          "ARC"
+        ],
+        "type": "recyclable",
+        "value": 2000,
+        "icon": "/items/icons/rollbot_part.webp",
+        "updatedAt": "2025-10-20T11:29:16.330Z"
+      },
+      "amount": 2
+    },
+    {
+      "item": {
+        "rarity": "uncommon",
+        "name": "Tick Pod",
+        "id": "tick_pod",
+        "foundIn": [
+          "ARC"
+        ],
+        "type": "recyclable",
+        "value": 640,
+        "icon": "/items/icons/tick_pod.webp",
+        "updatedAt": "2025-10-20T11:29:16.330Z"
+      },
+      "amount": 2
+    },
+    {
+      "item": {
+        "rarity": "rare",
+        "name": "Wasp Driver",
+        "id": "wasp_driver",
+        "foundIn": [
+          "ARC"
+        ],
+        "type": "recyclable",
+        "value": 1000,
+        "icon": "/items/icons/wasp_driver.webp",
+        "updatedAt": "2025-10-20T11:29:16.330Z"
+      },
+      "amount": 1
+    }
+  ],
+  "droppedBy": [
+    {
+      "id": "wasp",
+      "name": "Wasp",
+      "updatedAt": "2025-10-23T12:37:58.471Z",
+      "icon": "/arc/icons/wasp.svg"
+    },
+    {
+      "id": "hornet",
+      "name": "Hornet",
+      "updatedAt": "2025-10-20T10:12:20.202Z",
+      "icon": "/arc/icons/hornet.svg"
+    },
+    {
+      "id": "snitch",
+      "name": "Snitch",
+      "updatedAt": "2025-10-20T10:12:20.202Z",
+      "icon": "/arc/icons/snitch.svg"
+    },
+    {
+      "id": "tick",
+      "name": "Tick",
+      "updatedAt": "2025-10-20T10:12:20.202Z",
+      "icon": "/arc/icons/tick.svg"
+    },
+    {
+      "id": "pop",
+      "name": "Pop",
+      "updatedAt": "2025-10-20T10:12:20.202Z",
+      "icon": "/arc/icons/pop.svg"
+    },
+    {
+      "id": "fireball",
+      "name": "Fireball",
+      "updatedAt": "2025-10-20T10:12:20.202Z",
+      "icon": "/arc/icons/fireball.svg"
+    },
+    {
+      "id": "comet",
+      "name": "Comet",
+      "updatedAt": "2026-02-24T12:18:29.206Z",
+      "icon": "/arc/icons/comet.svg"
+    },
+    {
+      "id": "surveyor",
+      "name": "Surveyor",
+      "updatedAt": "2025-10-20T10:12:20.202Z",
+      "icon": "/arc/icons/surveyor.svg"
+    },
+    {
+      "id": "turret",
+      "name": "Turret",
+      "updatedAt": "2025-10-26T12:34:06.331Z",
+      "icon": "/arc/icons/turret.svg"
+    },
+    {
+      "id": "sentinel",
+      "name": "Sentinel",
+      "updatedAt": "2025-10-26T12:34:06.331Z",
+      "icon": "/arc/icons/sentinel.svg"
+    },
+    {
+      "id": "rocketeer",
+      "name": "Rocketeer",
+      "updatedAt": "2025-10-23T12:37:58.471Z",
+      "icon": "/arc/icons/rocketeer.svg"
+    },
+    {
+      "id": "bastion",
+      "name": "Bastion",
+      "updatedAt": "2025-10-20T10:12:20.202Z",
+      "icon": "/arc/icons/bastion.svg"
+    },
+    {
+      "id": "bombardier",
+      "name": "Bombardier",
+      "updatedAt": "2025-10-23T12:37:58.471Z",
+      "icon": "/arc/icons/bombardier.svg"
+    },
+    {
+      "id": "leaper",
+      "name": "Leaper",
+      "updatedAt": "2025-10-23T12:37:58.471Z",
+      "icon": "/arc/icons/leaper.svg"
+    },
+    {
+      "id": "queen",
+      "name": "Queen",
+      "updatedAt": "2025-10-20T10:12:20.202Z",
+      "icon": "/arc/icons/queen.svg"
+    },
+    {
+      "id": "matriarch",
+      "name": "Matriarch",
+      "updatedAt": "2025-12-13T17:18:44.079Z",
+      "icon": "/arc/icons/matriarch.svg"
+    },
+    {
+      "id": "shredder",
+      "name": "Shredder",
+      "updatedAt": "2025-11-15T18:53:20.022Z",
+      "icon": "/arc/icons/shredder.svg"
+    }
+  ],
+  "requiredForQuests": [
+    {
+      "quest": {
+        "id": "clearer_skies",
+        "title": "Clearer Skies",
+        "trader": {
+          "id": "shani",
+          "icon": "/traders/icons/shani.webp"
+        }
+      },
+      "amount": 3
+    }
+  ],
+  "requiredForStation": [
+    {
+      "amount": 6,
+      "station": {
+        "name": "Explosives Station",
+        "tier": 1
+      }
+    },
+    {
+      "amount": 6,
+      "station": {
+        "name": "Medical Lab",
+        "tier": 1
+      }
+    },
+    {
+      "amount": 6,
+      "station": {
+        "name": "Utility Station",
+        "tier": 1
+      }
+    }
+  ],
+  "maps": []
+}

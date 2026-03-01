@@ -164,3 +164,107 @@ export function lookupArdbByName(name, crossRef) {
   if (!crossRef || !name) return null;
   return crossRef.get(name.trim().toLowerCase()) ?? null;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ARC ENEMIES  (list + per-enemy detail with markers and relatedMaps)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Enemy list shape (from /api/arc-enemies):
+ *   { id, name, updatedAt, icon }
+ *
+ * Enemy detail shape (from /api/arc-enemies/:id) adds:
+ *   dropTable[]         — items dropped by this enemy (name, id, rarity, icon, type, value, foundIn)
+ *   image               — hero image path (relative, use ardbImg())
+ *   relatedMaps[]       — map objects this enemy appears on, each with:
+ *                           id, name, description, image, tileLayers[]
+ *                           tileLayers: { id, name, width, height, tilesize, tileUrl, maxZoom, minZoom, maxNativeZoom }
+ *   markers[]           — spawn point coordinates: { coordinate: [x, y], mapId }
+ *   relatedLocationTypes — internal location type tags (array of strings)
+ *
+ * Enemy map coverage (from probe 2025-02):
+ *   wasp, hornet, firefly, snitch, comet → relatedMaps: [] (spawn everywhere / unknown)
+ *   tick, pop, fireball, surveyor, turret, sentinel, rocketeer, bastion,
+ *   bombardier, spotter, leaper → all 5 maps (or 4 without Stella Montis)
+ *   queen, matriarch → Dam, Spaceport, Blue Gate
+ *   shredder          → Stella Montis only
+ */
+
+const ENEMIES_CACHE_KEY = 'rp_ardb_enemies';
+const ENEMIES_CACHE_TTL = 60 * 60 * 1000; // 1 hour
+
+/** @type {object[]|null} */
+let _enemiesCache   = null;
+/** @type {Promise<object[]>|null} */
+let _enemiesPromise = null;
+
+/**
+ * Fetches the ARDB arc-enemies list.
+ * Cached in localStorage for 1 hour.
+ *
+ * @param {{ forceRefresh?: boolean }} [opts]
+ * @returns {Promise<object[]>}
+ */
+export async function fetchArdbEnemies({ forceRefresh = false } = {}) {
+  if (!forceRefresh && _enemiesCache) return _enemiesCache;
+  if (!forceRefresh && _enemiesPromise) return _enemiesPromise;
+
+  _enemiesPromise = (async () => {
+    if (!forceRefresh) {
+      try {
+        const raw = localStorage.getItem(ENEMIES_CACHE_KEY);
+        if (raw) {
+          const { data, at } = JSON.parse(raw);
+          if (Date.now() - at < ENEMIES_CACHE_TTL) {
+            _enemiesCache = data;
+            _enemiesPromise = null;
+            return _enemiesCache;
+          }
+        }
+      } catch { /* ignore */ }
+    }
+
+    console.log('[ARDB] Fetching arc-enemies list...');
+    const res = await fetch(`${ARDB_BASE}/arc-enemies`, {
+      headers: { Accept: 'application/json' },
+    });
+    if (!res.ok) throw new Error(`ARDB /arc-enemies returned HTTP ${res.status}`);
+
+    const data = await res.json();
+    _enemiesCache = Array.isArray(data) ? data : [];
+    console.log(`[ARDB] ${_enemiesCache.length} enemies loaded.`);
+
+    try {
+      localStorage.setItem(ENEMIES_CACHE_KEY, JSON.stringify({ data: _enemiesCache, at: Date.now() }));
+    } catch { /* quota exceeded */ }
+
+    _enemiesPromise = null;
+    return _enemiesCache;
+  })();
+
+  return _enemiesPromise;
+}
+
+/** @type {Map<string, object>}  enemyId → full detail */
+const _enemyDetailCache = new Map();
+
+/**
+ * Fetches full detail for a single ARC enemy by id.
+ * Includes dropTable, relatedMaps, markers, relatedLocationTypes.
+ * Cached in-memory per session.
+ *
+ * @param {string} enemyId   e.g. "tick", "queen"
+ * @returns {Promise<object>}
+ */
+export async function fetchArdbEnemy(enemyId) {
+  if (_enemyDetailCache.has(enemyId)) return _enemyDetailCache.get(enemyId);
+
+  const res = await fetch(`${ARDB_BASE}/arc-enemies/${encodeURIComponent(enemyId)}`, {
+    headers: { Accept: 'application/json' },
+  });
+  if (!res.ok) throw new Error(`ARDB /arc-enemies/${enemyId} returned HTTP ${res.status}`);
+
+  const data = await res.json();
+  _enemyDetailCache.set(enemyId, data);
+  return data;
+}

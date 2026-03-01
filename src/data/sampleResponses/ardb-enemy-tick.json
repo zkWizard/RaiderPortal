@@ -1,0 +1,866 @@
+{
+  "updatedAt": "2025-10-20T10:12:20.202Z",
+  "id": "tick",
+  "name": "Tick",
+  "dropTable": [
+    {
+      "rarity": "common",
+      "name": "ARC Powercell",
+      "id": "arc_powercell",
+      "foundIn": [
+        "ARC"
+      ],
+      "type": "topside material",
+      "value": 270,
+      "icon": "/items/icons/arc_powercell.webp",
+      "updatedAt": "2025-11-20T13:25:05.790Z"
+    },
+    {
+      "rarity": "uncommon",
+      "name": "Tick Pod",
+      "id": "tick_pod",
+      "foundIn": [
+        "ARC"
+      ],
+      "type": "recyclable",
+      "value": 640,
+      "icon": "/items/icons/tick_pod.webp",
+      "updatedAt": "2025-10-20T11:29:16.330Z"
+    },
+    {
+      "rarity": "uncommon",
+      "name": "ARC Alloy",
+      "id": "arc_alloy",
+      "foundIn": [
+        "ARC"
+      ],
+      "type": "topside material",
+      "value": 200,
+      "icon": "/items/icons/arc_alloy.webp",
+      "updatedAt": "2025-10-20T11:29:16.330Z"
+    }
+  ],
+  "relatedLocationTypes": [
+    "tick"
+  ],
+  "icon": "/arc/icons/tick.svg",
+  "image": "/arc/images/tick.webp",
+  "markers": [
+    {
+      "coordinate": [
+        3876,
+        5324
+      ],
+      "mapId": "dam"
+    },
+    {
+      "coordinate": [
+        4087.5,
+        5382
+      ],
+      "mapId": "dam"
+    },
+    {
+      "coordinate": [
+        5155,
+        5600.5
+      ],
+      "mapId": "dam"
+    },
+    {
+      "coordinate": [
+        4982,
+        5559.56
+      ],
+      "mapId": "dam"
+    },
+    {
+      "coordinate": [
+        5148,
+        3203.5
+      ],
+      "mapId": "dam"
+    },
+    {
+      "coordinate": [
+        3249.16,
+        4148.06
+      ],
+      "mapId": "dam"
+    },
+    {
+      "coordinate": [
+        2730,
+        5571
+      ],
+      "mapId": "dam"
+    },
+    {
+      "coordinate": [
+        4434,
+        3683.5
+      ],
+      "mapId": "dam"
+    },
+    {
+      "coordinate": [
+        3274,
+        5847
+      ],
+      "mapId": "dam"
+    },
+    {
+      "coordinate": [
+        5374,
+        5295.5
+      ],
+      "mapId": "dam"
+    },
+    {
+      "coordinate": [
+        5262,
+        3174.5
+      ],
+      "mapId": "dam"
+    },
+    {
+      "coordinate": [
+        3778.5,
+        4030
+      ],
+      "mapId": "dam"
+    },
+    {
+      "coordinate": [
+        3789,
+        4027.5
+      ],
+      "mapId": "dam"
+    },
+    {
+      "coordinate": [
+        3801,
+        4016.5
+      ],
+      "mapId": "dam"
+    },
+    {
+      "coordinate": [
+        4120.5,
+        5072
+      ],
+      "mapId": "dam"
+    },
+    {
+      "coordinate": [
+        5092.5,
+        3043
+      ],
+      "mapId": "dam"
+    },
+    {
+      "coordinate": [
+        4878.43,
+        5624.25
+      ],
+      "mapId": "dam"
+    },
+    {
+      "coordinate": [
+        3345,
+        4028
+      ],
+      "mapId": "dam"
+    },
+    {
+      "coordinate": [
+        4854.05,
+        5652.2
+      ],
+      "mapId": "dam"
+    },
+    {
+      "coordinate": [
+        4829.67,
+        5648.63
+      ],
+      "mapId": "dam"
+    },
+    {
+      "coordinate": [
+        5112.5,
+        2975
+      ],
+      "mapId": "dam"
+    },
+    {
+      "coordinate": [
+        3724,
+        5051
+      ],
+      "mapId": "dam"
+    },
+    {
+      "coordinate": [
+        5312.19,
+        5369.42
+      ],
+      "mapId": "dam"
+    },
+    {
+      "coordinate": [
+        3251,
+        5827
+      ],
+      "mapId": "dam"
+    },
+    {
+      "coordinate": [
+        3454,
+        3746
+      ],
+      "mapId": "spaceport"
+    },
+    {
+      "coordinate": [
+        2418,
+        4104
+      ],
+      "mapId": "spaceport"
+    },
+    {
+      "coordinate": [
+        3699.5,
+        5836.5
+      ],
+      "mapId": "spaceport"
+    },
+    {
+      "coordinate": [
+        3679,
+        5763.5
+      ],
+      "mapId": "spaceport"
+    },
+    {
+      "coordinate": [
+        3608.5,
+        5791.5
+      ],
+      "mapId": "spaceport"
+    },
+    {
+      "coordinate": [
+        3174,
+        4606.5
+      ],
+      "mapId": "spaceport"
+    },
+    {
+      "coordinate": [
+        3203.5,
+        4617
+      ],
+      "mapId": "spaceport"
+    },
+    {
+      "coordinate": [
+        4557,
+        3097.5
+      ],
+      "mapId": "spaceport"
+    },
+    {
+      "coordinate": [
+        3459,
+        3786
+      ],
+      "mapId": "spaceport"
+    },
+    {
+      "coordinate": [
+        4348.34,
+        5556.12
+      ],
+      "mapId": "spaceport"
+    },
+    {
+      "coordinate": [
+        4263.9,
+        5635.8
+      ],
+      "mapId": "spaceport"
+    },
+    {
+      "coordinate": [
+        3371.98,
+        5543.47
+      ],
+      "mapId": "spaceport"
+    },
+    {
+      "coordinate": [
+        4187.66,
+        4240.63
+      ],
+      "mapId": "spaceport"
+    },
+    {
+      "coordinate": [
+        4816.65,
+        3456.07
+      ],
+      "mapId": "spaceport"
+    },
+    {
+      "coordinate": [
+        4339.42,
+        2057.48
+      ],
+      "mapId": "buried-city"
+    },
+    {
+      "coordinate": [
+        5852.5,
+        3269
+      ],
+      "mapId": "buried-city"
+    },
+    {
+      "coordinate": [
+        4939.97,
+        4802.76
+      ],
+      "mapId": "buried-city"
+    },
+    {
+      "coordinate": [
+        3694.9,
+        5667.63
+      ],
+      "mapId": "buried-city"
+    },
+    {
+      "coordinate": [
+        5351,
+        3312
+      ],
+      "mapId": "buried-city"
+    },
+    {
+      "coordinate": [
+        4486.55,
+        4846.48
+      ],
+      "mapId": "buried-city"
+    },
+    {
+      "coordinate": [
+        4576.5,
+        5301.96
+      ],
+      "mapId": "buried-city"
+    },
+    {
+      "coordinate": [
+        3483,
+        5313.5
+      ],
+      "mapId": "buried-city"
+    },
+    {
+      "coordinate": [
+        3615.5,
+        3409.5
+      ],
+      "mapId": "buried-city"
+    },
+    {
+      "coordinate": [
+        5023.5,
+        3287.5
+      ],
+      "mapId": "buried-city"
+    },
+    {
+      "coordinate": [
+        4845.25,
+        2951.53
+      ],
+      "mapId": "buried-city"
+    },
+    {
+      "coordinate": [
+        4821.7,
+        2874.17
+      ],
+      "mapId": "buried-city"
+    },
+    {
+      "coordinate": [
+        3263.18,
+        4787.89
+      ],
+      "mapId": "buried-city"
+    },
+    {
+      "coordinate": [
+        3466,
+        5336.5
+      ],
+      "mapId": "buried-city"
+    },
+    {
+      "coordinate": [
+        3501,
+        5303
+      ],
+      "mapId": "buried-city"
+    },
+    {
+      "coordinate": [
+        4366,
+        5715
+      ],
+      "mapId": "buried-city"
+    },
+    {
+      "coordinate": [
+        4022.02,
+        2907.08
+      ],
+      "mapId": "buried-city"
+    },
+    {
+      "coordinate": [
+        4795.6,
+        4958.4
+      ],
+      "mapId": "buried-city"
+    },
+    {
+      "coordinate": [
+        5878,
+        3320
+      ],
+      "mapId": "buried-city"
+    },
+    {
+      "coordinate": [
+        4498.5,
+        3930
+      ],
+      "mapId": "buried-city"
+    },
+    {
+      "coordinate": [
+        4103.5,
+        2970
+      ],
+      "mapId": "buried-city"
+    },
+    {
+      "coordinate": [
+        3852.14,
+        4861.36
+      ],
+      "mapId": "underground"
+    },
+    {
+      "coordinate": [
+        5052.58,
+        5180.94
+      ],
+      "mapId": "underground"
+    },
+    {
+      "coordinate": [
+        5014.75,
+        4519.65
+      ],
+      "mapId": "underground"
+    },
+    {
+      "coordinate": [
+        4069.15,
+        5248.32
+      ],
+      "mapId": "blue-gate"
+    },
+    {
+      "coordinate": [
+        4073.41,
+        5236.11
+      ],
+      "mapId": "blue-gate"
+    },
+    {
+      "coordinate": [
+        7338.35,
+        4821.93
+      ],
+      "mapId": "stella-montis-l2"
+    },
+    {
+      "coordinate": [
+        7358.15,
+        4858.7
+      ],
+      "mapId": "stella-montis-l2"
+    },
+    {
+      "coordinate": [
+        6190.01,
+        3643.89
+      ],
+      "mapId": "stella-montis-l2"
+    },
+    {
+      "coordinate": [
+        6062.86,
+        3600.71
+      ],
+      "mapId": "stella-montis-l2"
+    },
+    {
+      "coordinate": [
+        1912.25,
+        3213.98
+      ],
+      "mapId": "stella-montis-l2"
+    },
+    {
+      "coordinate": [
+        1937.22,
+        3242.52
+      ],
+      "mapId": "stella-montis-l2"
+    },
+    {
+      "coordinate": [
+        1943.16,
+        3183.06
+      ],
+      "mapId": "stella-montis-l2"
+    },
+    {
+      "coordinate": [
+        6544.27,
+        4744.85
+      ],
+      "mapId": "stella-montis-l2"
+    },
+    {
+      "coordinate": [
+        1722.16,
+        4113.65
+      ],
+      "mapId": "stella-montis-l2"
+    },
+    {
+      "coordinate": [
+        1658.25,
+        4085.06
+      ],
+      "mapId": "stella-montis-l2"
+    },
+    {
+      "coordinate": [
+        1717.11,
+        4068.24
+      ],
+      "mapId": "stella-montis-l2"
+    },
+    {
+      "coordinate": [
+        2094.67,
+        3605.75
+      ],
+      "mapId": "stella-montis-l2"
+    },
+    {
+      "coordinate": [
+        5005.02,
+        4139.72
+      ],
+      "mapId": "stella-montis-l2"
+    },
+    {
+      "coordinate": [
+        5005.86,
+        4078.33
+      ],
+      "mapId": "stella-montis-l2"
+    },
+    {
+      "coordinate": [
+        5117.7,
+        4117.86
+      ],
+      "mapId": "stella-montis-l2"
+    },
+    {
+      "coordinate": [
+        5768.55,
+        3252.57
+      ],
+      "mapId": "stella-montis-l2"
+    },
+    {
+      "coordinate": [
+        6733.29,
+        4534
+      ],
+      "mapId": "stella-montis-l2"
+    },
+    {
+      "coordinate": [
+        6569.02,
+        4727.88
+      ],
+      "mapId": "stella-montis-l2"
+    },
+    {
+      "coordinate": [
+        5959.5,
+        2523.83
+      ],
+      "mapId": "stella-montis-l1"
+    },
+    {
+      "coordinate": [
+        5815.25,
+        2379.58
+      ],
+      "mapId": "stella-montis-l1"
+    },
+    {
+      "coordinate": [
+        5970.81,
+        2348.47
+      ],
+      "mapId": "stella-montis-l1"
+    },
+    {
+      "coordinate": [
+        5806.76,
+        1972.29
+      ],
+      "mapId": "stella-montis-l1"
+    },
+    {
+      "coordinate": [
+        5982,
+        1992
+      ],
+      "mapId": "stella-montis-l1"
+    },
+    {
+      "coordinate": [
+        6267.79,
+        2028.86
+      ],
+      "mapId": "stella-montis-l1"
+    },
+    {
+      "coordinate": [
+        6276.28,
+        2393.72
+      ],
+      "mapId": "stella-montis-l1"
+    },
+    {
+      "coordinate": [
+        6287.59,
+        2546.46
+      ],
+      "mapId": "stella-montis-l1"
+    },
+    {
+      "coordinate": [
+        6505.38,
+        2515.35
+      ],
+      "mapId": "stella-montis-l1"
+    },
+    {
+      "coordinate": [
+        6502.55,
+        2382.41
+      ],
+      "mapId": "stella-montis-l1"
+    },
+    {
+      "coordinate": [
+        6502.55,
+        2020.37
+      ],
+      "mapId": "stella-montis-l1"
+    },
+    {
+      "coordinate": [
+        6511.04,
+        1870.47
+      ],
+      "mapId": "stella-montis-l1"
+    },
+    {
+      "coordinate": [
+        5801.1,
+        2549.29
+      ],
+      "mapId": "stella-montis-l1"
+    },
+    {
+      "coordinate": [
+        5874.64,
+        2204.22
+      ],
+      "mapId": "stella-montis-l1"
+    },
+    {
+      "coordinate": [
+        6281.94,
+        1881.78
+      ],
+      "mapId": "stella-montis-l1"
+    },
+    {
+      "coordinate": [
+        5934.67,
+        4782.67
+      ],
+      "mapId": "stella-montis-l2"
+    },
+    {
+      "coordinate": [
+        6912.68,
+        3847.54
+      ],
+      "mapId": "stella-montis-l2"
+    },
+    {
+      "coordinate": [
+        4635.02,
+        5528.04
+      ],
+      "mapId": "stella-montis-l2"
+    },
+    {
+      "coordinate": [
+        3855.78,
+        5592.03
+      ],
+      "mapId": "stella-montis-l1"
+    }
+  ],
+  "relatedMaps": [
+    {
+      "id": "dam",
+      "name": "Dam Battlegrounds",
+      "tileLayers": [
+        {
+          "id": "dam",
+          "name": "Dam Battlegrounds",
+          "width": 8192,
+          "height": 8192,
+          "tilesize": 512,
+          "tileUrl": "/map-tiles/dam/{z}/{y}/{x}.webp",
+          "maxZoom": 5,
+          "minZoom": 1,
+          "maxNativeZoom": 4
+        }
+      ],
+      "image": "/maps/images/dam.webp",
+      "description": "Alcantara Power Plant, or \"The Dam\", stands as a silent sentinel amidst a toxic, waterlogged land, nourishing a riot of resilient vegitation and fauna. A monument echoing with the memories of power once generated."
+    },
+    {
+      "id": "spaceport",
+      "name": "The Spaceport",
+      "tileLayers": [
+        {
+          "id": "spaceport",
+          "name": "The Spaceport",
+          "width": 8192,
+          "height": 8192,
+          "tilesize": 512,
+          "tileUrl": "/map-tiles/spaceport/{z}/{y}/{x}.webp",
+          "maxZoom": 5,
+          "minZoom": 1,
+          "maxNativeZoom": 3
+        }
+      ],
+      "image": "/maps/images/spaceport.webp",
+      "description": "Acerra Spaceport is a majestic testament to humanity's past ambitions. This is where the Exodus shuttles, vessels of hope and desperation, once roared into the heavens, leaving a beleaguered Earth behind."
+    },
+    {
+      "id": "buried-city",
+      "name": "Buried City",
+      "tileLayers": [
+        {
+          "id": "buried-city",
+          "name": "Buried City",
+          "width": 8192,
+          "height": 8192,
+          "tilesize": 512,
+          "tileUrl": "/map-tiles/buried-city-v2/{z}/{x}/{y}.webp",
+          "maxZoom": 5,
+          "minZoom": 1,
+          "maxNativeZoom": 3
+        }
+      ],
+      "image": "/maps/images/buried-city.webp",
+      "description": "Amidst the sand dunes in this arid wasteland you will find a remnant of the old world quite unlike the cold steel spires of the Exodus age. Walk these narrow streets and empty plazas, and know that people once lived here."
+    },
+    {
+      "id": "blue-gate",
+      "name": "Blue Gate",
+      "image": "/maps/images/blue-gate.webp",
+      "tileLayers": [
+        {
+          "id": "blue-gate",
+          "name": "Blue Gate",
+          "width": 8192,
+          "height": 8192,
+          "tilesize": 512,
+          "tileUrl": "/map-tiles/blue-gate-v2/{z}/{x}/{y}.webp",
+          "maxZoom": 5,
+          "minZoom": 1,
+          "maxNativeZoom": 3
+        }
+      ],
+      "description": "Once a steadfast symbol of defiant connection, the Blue Gate now serves as a daunting entryway into the perilous mountain ranges. The surrounding valley bears scars both new and old."
+    },
+    {
+      "id": "stella-montis",
+      "name": "Stella Montis",
+      "image": "/maps/images/stella-montis-v2.webp",
+      "tileLayers": [
+        {
+          "id": "stella-montis-l2",
+          "name": "Top Section",
+          "width": 8192,
+          "height": 8192,
+          "tilesize": 512,
+          "tileUrl": "/map-tiles/stella-montis-l2/{z}/{x}/{y}.webp",
+          "maxZoom": 5,
+          "minZoom": 1,
+          "maxNativeZoom": 3
+        },
+        {
+          "id": "stella-montis-l1",
+          "name": "Bottom Section",
+          "width": 8192,
+          "height": 8192,
+          "tilesize": 512,
+          "tileUrl": "/map-tiles/stella-montis-l1/{z}/{x}/{y}.webp",
+          "maxZoom": 5,
+          "minZoom": 1,
+          "maxNativeZoom": 3
+        }
+      ],
+      "description": "A secluded research facility amidst snow-draped peaks, Stella Montis is said to have been the last bulwark of humanity's preservation.",
+      "locked": false
+    }
+  ]
+}
