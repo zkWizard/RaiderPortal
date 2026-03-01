@@ -1,0 +1,26 @@
+{
+  "Tempest": {
+    "dropSources": ["Night Raid containers", "First Wave Caches during Hurricane"],
+    "containerTypes": ["Residential", "Commercial"],
+    "farmingTips": "Buried City Hospital during Night Raid has the most containers. Village area on Blue Gate Night Raid also good. Commercial desk drawers in Research & Admin on Dam."
+  },
+  "Equalizer": {
+    "dropSources": ["Harvester Event puzzle reward", "Queen boss kill"],
+    "eventExclusive": "Harvester",
+    "bossDrops": ["Queen"]
+  },
+  "Jupiter": {
+    "dropSources": ["Harvester Event reward"],
+    "eventExclusive": "Harvester"
+  },
+  "Wolfpack": {
+    "dropSources": ["Night Raid containers"],
+    "containerTypes": ["Residential"],
+    "farmingTips": "Drops commonly during any Night Raid from residential containers."
+  },
+  "Volcano": {
+    "dropSources": ["Hidden Bunker Server Racks", "First Wave Caches during Hurricane"],
+    "containerTypes": ["Server Rack"],
+    "farmingTips": "Orange breachable Server Racks on top floor of Hidden Bunker. Also drops from First Wave Caches during Hurricane."
+  }
+}

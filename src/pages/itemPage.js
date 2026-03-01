@@ -17,6 +17,7 @@
 import { fetchItems, fetchTraders } from '../services/metaforgeApi.js';
 import { normalizeBaseName, nameToSlug } from '../services/searchIndex.js';
 import { buildArdbCrossRef, lookupArdbByName, fetchArdbItem, ardbImg } from '../services/ardbApi.js';
+import ITEM_OVERRIDES from '../data/item-overrides.json' assert { type: 'json' };
 
 // ─── Utilities ────────────────────────────────────────────────
 
@@ -382,6 +383,72 @@ function buildGuideLinks(links) {
     </div>`;
 }
 
+// ─── How to Get This Item section ────────────────────────────
+
+/**
+ * Renders manual override data for items not covered by the APIs.
+ * Keyed by normalized base name in src/data/item-overrides.json.
+ */
+function buildHowToGetSection(item) {
+  const override = ITEM_OVERRIDES[normalizeBaseName(item.name)];
+  if (!override) return '';
+
+  const parts = [];
+
+  // Drop sources — bullet list
+  if (override.dropSources?.length) {
+    const items = override.dropSources.map((s) => `<li>${esc(s)}</li>`).join('');
+    parts.push(`<ul class="how-sources-list">${items}</ul>`);
+  }
+
+  // Event / map exclusive badges
+  const badges = [];
+  if (override.eventExclusive)
+    badges.push(`<span class="how-badge how-badge--event">⚡ ${esc(override.eventExclusive)} Event</span>`);
+  if (override.mapExclusive)
+    badges.push(`<span class="how-badge how-badge--map">📍 ${esc(override.mapExclusive)} Only</span>`);
+  if (badges.length)
+    parts.push(`<div class="how-badges">${badges.join('')}</div>`);
+
+  // Boss drops
+  if (override.bossDrops?.length) {
+    const tags = override.bossDrops
+      .map((e) => `<span class="how-tag how-tag--boss">${esc(e)}</span>`).join('');
+    parts.push(`
+      <div class="how-row">
+        <span class="how-label">Boss Drops</span>
+        <div class="how-tags">${tags}</div>
+      </div>`);
+  }
+
+  // Container types
+  if (override.containerTypes?.length) {
+    const tags = override.containerTypes
+      .map((c) => `<span class="how-tag how-tag--container">${esc(c)}</span>`).join('');
+    parts.push(`
+      <div class="how-row">
+        <span class="how-label">Containers</span>
+        <div class="how-tags">${tags}</div>
+      </div>`);
+  }
+
+  // Farming tip — orange left-border callout
+  if (override.farmingTips)
+    parts.push(`<p class="how-tip"><em>${esc(override.farmingTips)}</em></p>`);
+
+  // Notes — plain text
+  if (override.notes)
+    parts.push(`<p class="how-notes">${esc(override.notes)}</p>`);
+
+  if (!parts.length) return '';
+
+  return `
+    <div class="detail-section">
+      <div class="section-title">How to Get This Item</div>
+      ${parts.join('\n')}
+    </div>`;
+}
+
 // ─── Locations section ────────────────────────────────────────
 
 function buildLocationsSection(item) {
@@ -517,6 +584,8 @@ function buildBody(item, soldBy, ardbDetail) {
     buildRecycling(ardbDetail),
 
     buildUsedInCraft(ardbDetail),
+
+    buildHowToGetSection(item),
 
     buildLocationsSection(item),
 
