@@ -538,7 +538,7 @@ export function renderMapsList(container) {
   document.title = 'Maps — RaiderPortal';
 
   const cards = MAPS.map((map) => `
-    <div class="map-card" data-map-id="${esc(map.id)}">
+    <a class="map-card" href="#/map/${esc(map.id)}">
       <div class="map-card-img-wrap">
         <img class="map-card-img" src="${esc(map.image)}" alt="${esc(map.name)}" loading="lazy"
              onerror="this.parentElement.classList.add('map-card-img-err')">
@@ -547,7 +547,7 @@ export function renderMapsList(container) {
         <h2 class="map-card-name">${esc(map.name)}</h2>
         <p class="map-card-desc">${esc(map.desc)}</p>
       </div>
-    </div>`).join('');
+    </a>`).join('');
 
   container.innerHTML = `
     <div class="page-maps">

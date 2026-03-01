@@ -15,6 +15,7 @@
  *   #/arc/:id        → arcPage.js
  *   #/quest/:id      → questPage.js
  *   #/trader/:id     → traderPage.js
+ *   #/map/:id        → mapPage.js
  *
  * Anything else → shows the landing page.
  */
@@ -23,6 +24,7 @@ import { renderItemGroup } from './pages/itemPage.js';
 import { renderQuest }     from './pages/questPage.js';
 import { renderArc }       from './pages/arcPage.js';
 import { renderTrader }    from './pages/traderPage.js';
+import { renderMap }       from './pages/mapPage.js';
 import {
   renderItemsList,
   renderQuestsList,
@@ -38,6 +40,7 @@ const RENDERERS = {
   arc:    renderArc,
   quest:  renderQuest,
   trader: renderTrader,
+  map:    renderMap,
 };
 
 /** Listing routes — no :id segment, one per nav category. */
@@ -50,8 +53,8 @@ const LIST_RENDERERS = {
   maps:    renderMapsList,
 };
 
-/** Matches detail-page hashes: #/item/:id, #/arc/:id, etc. */
-const ROUTE_RE = /^#\/(item|arc|quest|trader)\/(.+)$/;
+/** Matches detail-page hashes: #/item/:id, #/arc/:id, #/map/:id, etc. */
+const ROUTE_RE = /^#\/(item|arc|quest|trader|map)\/(.+)$/;
 
 /** Matches listing-page hashes: #/items, #/quests, #/arc, #/traders, #/events, #/maps. */
 const LIST_RE  = /^#\/(items|quests|arc|traders|events|maps)$/;
