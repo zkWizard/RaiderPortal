@@ -1432,6 +1432,12 @@
     buildIndex()
       .then(() => {
         if (landingSearch.loadingBar) landingSearch.loadingBar.classList.remove('active');
+        const state = getIndexState();
+        console.log(
+          `[RaiderPortal] Search index ready: ${state.size} entries` +
+          ` (${state.breakdown.Item} items, ${state.breakdown.ARC} ARCs,` +
+          ` ${state.breakdown.Quest} quests, ${state.breakdown.Trader} traders)`
+        );
         if (document.getElementById('searchInput').value.trim().length >= 2) {
           landingSearch.runSearch();
         }

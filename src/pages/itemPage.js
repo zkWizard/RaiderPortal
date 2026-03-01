@@ -17,7 +17,22 @@
 import { fetchItems, fetchTraders } from '../services/metaforgeApi.js';
 import { normalizeBaseName, nameToSlug } from '../services/searchIndex.js';
 import { buildArdbCrossRef, lookupArdbByName, fetchArdbItem, ardbImg } from '../services/ardbApi.js';
-import ITEM_OVERRIDES from '../data/item-overrides.json' assert { type: 'json' };
+
+// ─── Item overrides loader ─────────────────────────────────────
+// Loaded via fetch() — static JSON import assertions (assert/with {type:'json'})
+// have inconsistent browser support and would break the entire module on Firefox.
+let _overridesCache = null;
+let _overridesPromise = null;
+
+async function loadItemOverrides() {
+  if (_overridesCache) return _overridesCache;
+  if (_overridesPromise) return _overridesPromise;
+  _overridesPromise = fetch('/src/data/item-overrides.json')
+    .then((r) => r.json())
+    .then((data) => { _overridesCache = data; _overridesPromise = null; return data; })
+    .catch((err) => { console.warn('[itemPage] Could not load item-overrides.json:', err.message); _overridesPromise = null; return {}; });
+  return _overridesPromise;
+}
 
 // ─── Utilities ────────────────────────────────────────────────
 
@@ -389,8 +404,8 @@ function buildGuideLinks(links) {
  * Renders manual override data for items not covered by the APIs.
  * Keyed by normalized base name in src/data/item-overrides.json.
  */
-function buildHowToGetSection(item) {
-  const override = ITEM_OVERRIDES[normalizeBaseName(item.name)];
+function buildHowToGetSection(item, itemOverrides) {
+  const override = (itemOverrides ?? {})[normalizeBaseName(item.name)];
   if (!override) return '';
 
   const parts = [];
@@ -563,7 +578,7 @@ function buildSidebar(item, soldBy, ardbDetail) {
 
 // ─── Per-item body block (main + sidebar, no hero) ─────────────
 
-function buildBody(item, soldBy, ardbDetail) {
+function buildBody(item, soldBy, ardbDetail, itemOverrides) {
   const mainContent = [
     item.description ? `
       <div class="detail-section">
@@ -585,7 +600,7 @@ function buildBody(item, soldBy, ardbDetail) {
 
     buildUsedInCraft(ardbDetail),
 
-    buildHowToGetSection(item),
+    buildHowToGetSection(item, itemOverrides),
 
     buildLocationsSection(item),
 
@@ -601,19 +616,20 @@ function buildBody(item, soldBy, ardbDetail) {
 
 // ─── Per-item content block (hero + body — used inside tier panels) ─
 
-function buildItemContent(item, soldBy, ardbDetail) {
+function buildItemContent(item, soldBy, ardbDetail, itemOverrides) {
   return `
     ${buildHero(item)}
-    ${buildBody(item, soldBy, ardbDetail)}`;
+    ${buildBody(item, soldBy, ardbDetail, itemOverrides)}`;
 }
 
 // ─── Main export ───────────────────────────────────────────────
 
 export async function renderItemGroup(slug, container) {
-  const [items, tradersData, ardbCrossRef] = await Promise.all([
+  const [items, tradersData, ardbCrossRef, itemOverrides] = await Promise.all([
     fetchItems(),
     fetchTraders().catch(() => ({})),
     buildArdbCrossRef().catch(() => null),
+    loadItemOverrides(),
   ]);
 
   // Primary lookup: all items whose normalised base-name slug matches the URL segment
@@ -686,7 +702,7 @@ export async function renderItemGroup(slug, container) {
           ${breadcrumb}
           ${buildHero(item)}
         </div>
-        ${buildBody(item, soldBy, ardbDetail)}
+        ${buildBody(item, soldBy, ardbDetail, itemOverrides)}
       </div>`;
     return;
   }
@@ -709,7 +725,7 @@ export async function renderItemGroup(slug, container) {
     const ardbDetail = ardbDetailMap.get(item.id) ?? null;
     return `
       <div class="tier-panel" data-panel="${i}"${i !== 0 ? ' hidden' : ''}>
-        ${buildItemContent(item, soldBy, ardbDetail)}
+        ${buildItemContent(item, soldBy, ardbDetail, itemOverrides)}
       </div>`;
   }).join('');
 
