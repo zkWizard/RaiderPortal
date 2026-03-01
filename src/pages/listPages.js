@@ -137,12 +137,13 @@ export async function renderItemsList(container) {
   // Numeric tier rank for an item name (higher = later tier).
   // Blueprints/Recipes return -1 so they're never chosen as representative.
   function tierIdx(name) {
-    if (/\bBlueprint\b/i.test(name) || /\bRecipe\b/i.test(name)) return -1;
-    const rv = name.match(/\s+(I{1,3}|IV|V)$/i);
+    const n = name.trim();
+    if (/\bBlueprint\b/i.test(n) || /\bRecipe\b/i.test(n)) return -1;
+    const rv = n.match(/\s+(I{1,3}|IV|V)$/i);
     if (rv) return { I: 0, II: 1, III: 2, IV: 3, V: 4 }[rv[1].toUpperCase()] ?? 0;
-    const mk  = name.match(/\s+[Mm][Kk]\.\s*(\d+)/);
+    const mk  = n.match(/\s+[Mm][Kk]\.\s*(\d+)/);
     if (mk)  return parseInt(mk[1], 10) - 1;
-    const num = name.match(/\s+(\d+)$/);
+    const num = n.match(/\s+(\d+)$/);
     if (num) return parseInt(num[1], 10) - 1;
     return 0; // base / single item
   }

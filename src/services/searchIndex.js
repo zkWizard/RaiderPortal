@@ -61,6 +61,7 @@ import {
  */
 export function normalizeBaseName(name) {
   return name
+    .trim()                               // strip leading/trailing whitespace first
     .replace(/\s+Blueprint\b/gi, '')
     .replace(/\s+Recipe\b/gi,    '')
     .replace(/\s+[Mm][Kk]\.\s*\d+/g, '')
