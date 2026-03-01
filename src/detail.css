@@ -434,6 +434,68 @@ body.no-transition .detail-view  { transition: none !important; }
   color: var(--yellow);
 }
 
+/* ── Crafting / Recycling ingredient rows ───────────────── */
+.craft-requirements {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.craft-ingredient {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  background: var(--bg-card);
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.craft-ingredient a {
+  color: var(--cream);
+  text-decoration: none;
+  transition: color 0.12s;
+}
+
+.craft-ingredient a:hover { color: var(--orange); }
+
+.craft-ing-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  flex-shrink: 0;
+  border-radius: 4px;
+}
+
+.craft-ing-icon-ph {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  background: var(--bg-void);
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+.craft-ing-amount {
+  margin-left: auto;
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.craft-meta {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.craft-meta strong { color: var(--cream); }
+
 /* ── Guide links ─────────────────────────────────────────── */
 .guide-links-list {
   display: flex;

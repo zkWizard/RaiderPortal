@@ -5,12 +5,18 @@
  * Tempest Blueprint) share a single unified page at #/item/{baseSlug}
  * with interactive tier tabs. Single-tier items render a standard layout.
  *
+ * Data is merged from two sources:
+ *   • MetaForge API  — primary source (items, traders)
+ *   • ARDB API       — supplemental (crafting recipes, recycling, usedInCraft,
+ *                      weight, stackSize)
+ *
  * Exported: renderItemGroup(slug, container)
  *   slug — URL segment from the router (baseSlug or raw item id as fallback)
  */
 
 import { fetchItems, fetchTraders } from '../services/metaforgeApi.js';
 import { normalizeBaseName, nameToSlug } from '../services/searchIndex.js';
+import { buildArdbCrossRef, lookupArdbByName, fetchArdbItem, ardbImg } from '../services/ardbApi.js';
 
 // ─── Utilities ────────────────────────────────────────────────
 
@@ -258,7 +264,62 @@ function buildStats(statBlock) {
     </div>`;
 }
 
-function buildCrafting(item) {
+// ─── ARDB ingredient row helper ───────────────────────────────
+
+function craftIngredientRow(ardbItem, amount) {
+  const iconUrl = ardbImg(ardbItem.icon);
+  const amountHtml = amount != null
+    ? `<span class="craft-ing-amount">× ${esc(String(amount))}</span>`
+    : '';
+  return `
+    <div class="craft-ingredient">
+      ${iconUrl
+        ? `<img class="craft-ing-icon" src="${esc(iconUrl)}" alt="" loading="lazy">`
+        : '<div class="craft-ing-icon-ph"></div>'}
+      ${itemLink(ardbItem.id, ardbItem.name)}
+      ${amountHtml}
+    </div>`;
+}
+
+// ─── Crafting section ─────────────────────────────────────────
+
+/**
+ * Builds the crafting section, preferring ARDB data (full recipe with
+ * ingredient icons) and falling back to MetaForge workbench name only.
+ *
+ * @param {object}      item       MetaForge item
+ * @param {object|null} ardbDetail Full ARDB item detail (may be null)
+ */
+function buildCrafting(item, ardbDetail) {
+  // ── Prefer ARDB recipe data ──────────────────────────────────
+  if (ardbDetail?.craftingRequirement) {
+    const cr = ardbDetail.craftingRequirement;
+
+    const ingredients = (cr.requiredItems ?? [])
+      .map(({ item: ing, amount }) => craftIngredientRow(ing, amount))
+      .join('');
+
+    const metaParts = [];
+    if (cr.station) {
+      const name = cr.station.id.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+      metaParts.push(`At: <strong>${esc(name)} Tier ${esc(String(cr.station.tier))}</strong>`);
+    }
+    if (cr.outputAmount && cr.outputAmount > 1) {
+      metaParts.push(`Output: <strong>× ${esc(String(cr.outputAmount))}</strong>`);
+    }
+    if (cr.blueprint) {
+      metaParts.push(`Blueprint: ${itemLink(cr.blueprint.id, cr.blueprint.name)}`);
+    }
+
+    return `
+      <div class="detail-section">
+        <div class="section-title">Crafting</div>
+        <div class="craft-requirements">${ingredients}</div>
+        ${metaParts.length ? `<div class="craft-meta">${metaParts.map((p) => `<span>${p}</span>`).join('')}</div>` : ''}
+      </div>`;
+  }
+
+  // ── Fallback: MetaForge workbench name only ──────────────────
   if (!item.workbench) return '';
   return `
     <div class="detail-section">
@@ -272,6 +333,42 @@ function buildCrafting(item) {
     </div>`;
 }
 
+// ─── Recycling section ────────────────────────────────────────
+
+/** Shows what the item breaks down into (ARDB `breaksInto`). */
+function buildRecycling(ardbDetail) {
+  if (!ardbDetail?.breaksInto?.length) return '';
+
+  const rows = ardbDetail.breaksInto
+    .map(({ item, amount }) => craftIngredientRow(item, amount))
+    .join('');
+
+  return `
+    <div class="detail-section">
+      <div class="section-title">Recycling Output</div>
+      <div class="craft-requirements">${rows}</div>
+    </div>`;
+}
+
+// ─── Used In Crafting section ─────────────────────────────────
+
+/** Shows other items that use this item as a crafting ingredient (ARDB `usedInCraft`). */
+function buildUsedInCraft(ardbDetail) {
+  if (!ardbDetail?.usedInCraft?.length) return '';
+
+  const rows = ardbDetail.usedInCraft
+    .map((ing) => craftIngredientRow(ing, null))
+    .join('');
+
+  return `
+    <div class="detail-section">
+      <div class="section-title">Used to Craft</div>
+      <div class="craft-requirements">${rows}</div>
+    </div>`;
+}
+
+// ─── Guide links section ──────────────────────────────────────
+
 function buildGuideLinks(links) {
   if (!links?.length) return '';
   const items = links.map((l) => `
@@ -284,6 +381,8 @@ function buildGuideLinks(links) {
       <div class="guide-links-list">${items}</div>
     </div>`;
 }
+
+// ─── Locations section ────────────────────────────────────────
 
 function buildLocationsSection(item) {
   // ── Tier 1: loot_area zone types ──────────────────────────────
@@ -337,10 +436,12 @@ function buildLocationsSection(item) {
     </div>`;
 }
 
-function buildSidebar(item, soldBy) {
+// ─── Sidebar ──────────────────────────────────────────────────
+
+function buildSidebar(item, soldBy, ardbDetail) {
   const rc = rarityClass(item.rarity);
 
-  // Quick facts
+  // Quick facts — MetaForge fields first, ARDB fills any gaps
   let facts = '';
   if (item.rarity)
     facts += `<div class="kv-row"><span class="kv-key">Rarity</span><span class="kv-val ${rc}">${esc(item.rarity)}</span></div>`;
@@ -350,15 +451,24 @@ function buildSidebar(item, soldBy) {
     facts += `<div class="kv-row"><span class="kv-key">Subcategory</span><span class="kv-val">${esc(item.subcategory)}</span></div>`;
   if (item.value)
     facts += `<div class="kv-row"><span class="kv-key">Base Value</span><span class="kv-val">${item.value.toLocaleString()}</span></div>`;
-  if (item.stat_block?.weight)
-    facts += `<div class="kv-row"><span class="kv-key">Weight</span><span class="kv-val">${item.stat_block.weight}</span></div>`;
-  if (item.stat_block?.stackSize > 1)
-    facts += `<div class="kv-row"><span class="kv-key">Stack Size</span><span class="kv-val">${item.stat_block.stackSize}</span></div>`;
+
+  // Weight — MetaForge stat_block first, ARDB fallback
+  const weight = item.stat_block?.weight ?? ardbDetail?.weight;
+  if (weight)
+    facts += `<div class="kv-row"><span class="kv-key">Weight</span><span class="kv-val">${weight}</span></div>`;
+
+  // Stack size — MetaForge stat_block first, ARDB fallback
+  const stackSize = item.stat_block?.stackSize ?? ardbDetail?.stackSize;
+  if (stackSize > 1)
+    facts += `<div class="kv-row"><span class="kv-key">Stack Size</span><span class="kv-val">${stackSize}</span></div>`;
+
   if (item.shield_type)
     facts += `<div class="kv-row"><span class="kv-key">Shield Type</span><span class="kv-val">${esc(item.shield_type)}</span></div>`;
   if (item.ammo_type)
     facts += `<div class="kv-row"><span class="kv-key">Ammo Type</span><span class="kv-val">${esc(item.ammo_type)}</span></div>`;
-  if (item.workbench)
+
+  // Workbench: show MetaForge name if no ARDB recipe data (ARDB crafting goes in main panel)
+  if (item.workbench && !ardbDetail?.craftingRequirement)
     facts += `<div class="kv-row"><span class="kv-key">Crafted At</span><span class="kv-val">${esc(item.workbench)}</span></div>`;
 
   let html = `<div class="info-card"><div class="info-card-title">Quick Facts</div>${facts}</div>`;
@@ -386,7 +496,7 @@ function buildSidebar(item, soldBy) {
 
 // ─── Per-item body block (main + sidebar, no hero) ─────────────
 
-function buildBody(item, soldBy) {
+function buildBody(item, soldBy, ardbDetail) {
   const mainContent = [
     item.description ? `
       <div class="detail-section">
@@ -402,7 +512,11 @@ function buildBody(item, soldBy) {
 
     buildStats(item.stat_block),
 
-    buildCrafting(item),
+    buildCrafting(item, ardbDetail),
+
+    buildRecycling(ardbDetail),
+
+    buildUsedInCraft(ardbDetail),
 
     buildLocationsSection(item),
 
@@ -412,24 +526,25 @@ function buildBody(item, soldBy) {
   return `
     <div class="detail-body">
       <div class="detail-main">${mainContent}</div>
-      <div class="detail-sidebar">${buildSidebar(item, soldBy)}</div>
+      <div class="detail-sidebar">${buildSidebar(item, soldBy, ardbDetail)}</div>
     </div>`;
 }
 
 // ─── Per-item content block (hero + body — used inside tier panels) ─
 
-function buildItemContent(item, soldBy) {
+function buildItemContent(item, soldBy, ardbDetail) {
   return `
     ${buildHero(item)}
-    ${buildBody(item, soldBy)}`;
+    ${buildBody(item, soldBy, ardbDetail)}`;
 }
 
 // ─── Main export ───────────────────────────────────────────────
 
 export async function renderItemGroup(slug, container) {
-  const [items, tradersData] = await Promise.all([
+  const [items, tradersData, ardbCrossRef] = await Promise.all([
     fetchItems(),
     fetchTraders().catch(() => ({})),
+    buildArdbCrossRef().catch(() => null),
   ]);
 
   // Primary lookup: all items whose normalised base-name slug matches the URL segment
@@ -461,6 +576,25 @@ export async function renderItemGroup(slug, container) {
   const sorted   = sortItemsByTier(group);
   const baseName = normalizeBaseName(sorted[0].name);
 
+  // ── Fetch ARDB details for all tiers in parallel ───────────────
+  // Cross-reference each MetaForge item name against the ARDB list, then
+  // fetch the full ARDB detail for any that match.
+  const ardbDetailMap = new Map(); // mf_item_id → ardb full detail
+  if (ardbCrossRef) {
+    await Promise.allSettled(
+      sorted.map(async (item) => {
+        const ardbListItem = lookupArdbByName(item.name, ardbCrossRef);
+        if (!ardbListItem) return;
+        try {
+          const detail = await fetchArdbItem(ardbListItem.id);
+          ardbDetailMap.set(item.id, detail);
+        } catch (err) {
+          console.warn(`[ARDB] Could not load detail for "${item.name}":`, err.message);
+        }
+      })
+    );
+  }
+
   const breadcrumb = `
     <nav class="detail-breadcrumb" aria-label="Breadcrumb">
       <a class="bc-link" href="#">Home</a>
@@ -472,17 +606,18 @@ export async function renderItemGroup(slug, container) {
 
   // ── Single-item path — no tier selector ───────────────────────
   if (sorted.length === 1) {
-    const item     = sorted[0];
-    const soldBy   = soldByMap.get(item.id) ?? [];
-    const subClass = getItemSubClass(item);
-    document.title = `${item.name} — RaiderPortal`;
+    const item       = sorted[0];
+    const soldBy     = soldByMap.get(item.id) ?? [];
+    const ardbDetail = ardbDetailMap.get(item.id) ?? null;
+    const subClass   = getItemSubClass(item);
+    document.title   = `${item.name} — RaiderPortal`;
     container.innerHTML = `
       <div class="page-item${subClass ? ' ' + subClass : ''}">
         <div class="detail-banner">
           ${breadcrumb}
           ${buildHero(item)}
         </div>
-        ${buildBody(item, soldBy)}
+        ${buildBody(item, soldBy, ardbDetail)}
       </div>`;
     return;
   }
@@ -501,10 +636,11 @@ export async function renderItemGroup(slug, container) {
   }).join('');
 
   const panels = sorted.map((item, i) => {
-    const soldBy = soldByMap.get(item.id) ?? [];
+    const soldBy     = soldByMap.get(item.id) ?? [];
+    const ardbDetail = ardbDetailMap.get(item.id) ?? null;
     return `
       <div class="tier-panel" data-panel="${i}"${i !== 0 ? ' hidden' : ''}>
-        ${buildItemContent(item, soldBy)}
+        ${buildItemContent(item, soldBy, ardbDetail)}
       </div>`;
   }).join('');
 

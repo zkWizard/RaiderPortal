@@ -1098,6 +1098,10 @@
         Data from <a href="https://metaforge.app/arc-raiders" target="_blank" rel="noopener">MetaForge</a>
       </span>
       <span class="footer-dot" aria-hidden="true">◆</span>
+      <span class="site-footer-item">
+        Data from <a href="https://ardb.app" target="_blank" rel="noopener">ARDB</a>
+      </span>
+      <span class="footer-dot" aria-hidden="true">◆</span>
       <span class="site-footer-item">Fan project — not affiliated with Embark Studios</span>
     </footer>
 
@@ -1119,6 +1123,7 @@
     import { buildIndex, search, getIndexState } from './src/services/searchIndex.js';
     import { initRouter } from './src/router.js';
     import { runLocationDiagnostics } from './src/diagnostics/locationDiag.js';
+    import { buildArdbCrossRef } from './src/services/ardbApi.js';
 
     // ─── Category select → index type ──────────────────────────
     const CATEGORY_TYPE = {
@@ -1419,6 +1424,9 @@
     );
 
     // ─── Kick off index build on page load ──────────────────────
+    // Pre-warm ARDB cross-reference in parallel with the MetaForge index.
+    buildArdbCrossRef().catch((err) => console.warn('[ARDB] Prefetch failed:', err));
+
     if (landingSearch.loadingBar) landingSearch.loadingBar.classList.add('active');
 
     buildIndex()

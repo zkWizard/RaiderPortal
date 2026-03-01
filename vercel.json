@@ -1,5 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/metaforge/(.*)", "destination": "/api/metaforge/[...path]" }
+    { "source": "/api/metaforge/(.*)", "destination": "/api/metaforge/[...path]" },
+    { "source": "/api/ardb/(.*)",      "destination": "/api/ardb/[...path]" }
   ]
 }
