@@ -29,6 +29,7 @@ import {
   renderArcsList,
   renderTradersList,
   renderEventsList,
+  renderMapsList,
 } from './pages/listPages.js';
 
 /** Detail routes — require an :id segment. */
@@ -46,13 +47,14 @@ const LIST_RENDERERS = {
   arc:     renderArcsList,
   traders: renderTradersList,
   events:  renderEventsList,
+  maps:    renderMapsList,
 };
 
 /** Matches detail-page hashes: #/item/:id, #/arc/:id, etc. */
 const ROUTE_RE = /^#\/(item|arc|quest|trader)\/(.+)$/;
 
-/** Matches listing-page hashes: #/items, #/quests, #/arc, #/traders, #/events. */
-const LIST_RE  = /^#\/(items|quests|arc|traders|events)$/;
+/** Matches listing-page hashes: #/items, #/quests, #/arc, #/traders, #/events, #/maps. */
+const LIST_RE  = /^#\/(items|quests|arc|traders|events|maps)$/;
 
 const DEFAULT_TITLE = 'RaiderPortal — ARC Raiders Database';
 

@@ -497,6 +497,70 @@ export async function renderTradersList(container) {
     </div>`;
 }
 
+// ─── Maps ──────────────────────────────────────────────────────
+
+const CDN = 'https://cdn.metaforge.app/arc-raiders/ui';
+
+const MAPS = [
+  {
+    id:    'dam',
+    name:  'Dam Battlegrounds',
+    image: `${CDN}/dambattlegrounds2.webp`,
+    desc:  'The Alcantara Power Plant, a toxic waterlogged stronghold and hotspot for ARC skirmishes.',
+  },
+  {
+    id:    'spaceport',
+    name:  'Spaceport',
+    image: `${CDN}/spaceport2.webp`,
+    desc:  'Where the Exodus shuttles once launched, now a multi-level combat zone.',
+  },
+  {
+    id:    'buried-city',
+    name:  'Buried City',
+    image: `${CDN}/buriecity2.webp`,
+    desc:  'An arid wasteland with remnants of old world streets and plazas.',
+  },
+  {
+    id:    'blue-gate',
+    name:  'Blue Gate',
+    image: `${CDN}/blue-gate2.webp`,
+    desc:  'A daunting entryway into perilous mountain ranges with underground tunnels.',
+  },
+  {
+    id:    'stella-montis',
+    name:  'Stella Montis',
+    image: `${CDN}/stella-montis2.webp`,
+    desc:  'A vast abandoned research facility carved deep into the northern mountains.',
+  },
+];
+
+export function renderMapsList(container) {
+  document.title = 'Maps — RaiderPortal';
+
+  const cards = MAPS.map((map) => `
+    <div class="map-card" data-map-id="${esc(map.id)}">
+      <div class="map-card-img-wrap">
+        <img class="map-card-img" src="${esc(map.image)}" alt="${esc(map.name)}" loading="lazy"
+             onerror="this.parentElement.classList.add('map-card-img-err')">
+      </div>
+      <div class="map-card-body">
+        <h2 class="map-card-name">${esc(map.name)}</h2>
+        <p class="map-card-desc">${esc(map.desc)}</p>
+      </div>
+    </div>`).join('');
+
+  container.innerHTML = `
+    <div class="page-maps">
+      <div class="detail-banner">
+        ${breadcrumb('Maps')}
+        ${bannerHeader('Maps', '5 playable locations')}
+      </div>
+      <div class="list-body detail-full">
+        <div class="map-card-grid">${cards}</div>
+      </div>
+    </div>`;
+}
+
 // ─── Events ────────────────────────────────────────────────────
 
 export async function renderEventsList(container) {
