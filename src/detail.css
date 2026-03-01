@@ -142,7 +142,7 @@ body.no-transition .detail-view  { transition: none !important; }
 .rarity-common    { color: #9d9d9d; }
 .rarity-uncommon  { color: #00b87a; }
 .rarity-rare      { color: #4a9eff; }
-.rarity-epic      { color: #a855f7; }
+.rarity-epic      { color: #e040a0; }
 .rarity-legendary { color: var(--yellow); }
 
 .hero-name {
@@ -1288,7 +1288,7 @@ body.no-transition .detail-view  { transition: none !important; }
 .item-card[data-rarity="Common"]    { --rc: #9d9d9d; }
 .item-card[data-rarity="Uncommon"]  { --rc: #00b87a; }
 .item-card[data-rarity="Rare"]      { --rc: #4a9eff; }
-.item-card[data-rarity="Epic"]      { --rc: #a855f7; }
+.item-card[data-rarity="Epic"]      { --rc: #e040a0; }
 .item-card[data-rarity="Legendary"] { --rc: #ffcc00; }
 
 .ic-icon-wrap {

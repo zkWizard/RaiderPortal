@@ -111,7 +111,7 @@ export async function renderItemsList(container) {
           <select id="itemSort" class="item-sort" aria-label="Sort items">
             <option value="name-asc">Name A→Z</option>
             <option value="name-desc">Name Z→A</option>
-            <option value="rarity-desc">Rarity: High→Low</option>
+            <option value="rarity-desc" selected>Rarity: High→Low</option>
             <option value="rarity-asc">Rarity: Low→High</option>
             <option value="value-desc">Value: High→Low</option>
             <option value="value-asc">Value: Low→High</option>
@@ -134,14 +134,28 @@ export async function renderItemsList(container) {
     groupMap.get(slug).items.push(item);
   }
 
-  // Representative item: prefer non-blueprint/recipe, then highest rarity
+  // Numeric tier rank for an item name (higher = later tier).
+  // Blueprints/Recipes return -1 so they're never chosen as representative.
+  function tierIdx(name) {
+    if (/\bBlueprint\b/i.test(name) || /\bRecipe\b/i.test(name)) return -1;
+    const rv = name.match(/\s+(I{1,3}|IV|V)$/i);
+    if (rv) return { I: 0, II: 1, III: 2, IV: 3, V: 4 }[rv[1].toUpperCase()] ?? 0;
+    const mk  = name.match(/\s+[Mm][Kk]\.\s*(\d+)/);
+    if (mk)  return parseInt(mk[1], 10) - 1;
+    const num = name.match(/\s+(\d+)$/);
+    if (num) return parseInt(num[1], 10) - 1;
+    return 0; // base / single item
+  }
+
+  // Pick the highest-tier non-blueprint/recipe item as representative.
+  // Its rarity is what we display on the card.
   function pickRep(groupItems) {
-    const pool = groupItems.filter(
+    const nonBP     = groupItems.filter(
       (i) => !['blueprint', 'recipe'].includes((i.item_type ?? '').toLowerCase())
     );
-    const candidates = pool.length ? pool : groupItems;
+    const candidates = nonBP.length ? nonBP : groupItems;
     return candidates.reduce((best, cur) =>
-      (RARITY_RANK[cur.rarity] ?? 0) > (RARITY_RANK[best.rarity] ?? 0) ? cur : best
+      tierIdx(cur.name) > tierIdx(best.name) ? cur : best
     );
   }
 
@@ -149,9 +163,7 @@ export async function renderItemsList(container) {
   function buildGroupCard({ slug, baseName, items: g }) {
     const rep        = pickRep(g);
     const href       = `#/item/${encodeURIComponent(slug)}`;
-    const highestRar = g.reduce((best, cur) =>
-      (RARITY_RANK[cur.rarity] ?? 0) > (RARITY_RANK[best.rarity] ?? 0) ? cur : best
-    ).rarity ?? 'Common';
+    const rarity     = rep.rarity ?? 'Common'; // rarity of the highest tier
     const bucket     = getBucket(rep.item_type);
     const maxValue   = Math.max(...g.map((i) => i.value ?? 0));
     const weight     = rep.stat_block?.weight;
@@ -174,7 +186,7 @@ export async function renderItemsList(container) {
       <a class="item-card" href="${esc(href)}"
          data-name="${esc(baseName.toLowerCase())}"
          data-bucket="${esc(bucket)}"
-         data-rarity="${esc(highestRar)}"
+         data-rarity="${esc(rarity)}"
          data-value="${maxValue}">
         <div class="ic-icon-wrap">
           ${iconHtml}
@@ -184,15 +196,20 @@ export async function renderItemsList(container) {
           <div class="ic-name">${esc(baseName)}</div>
           <div class="ic-footer">
             ${rep.item_type ? `<span class="ic-cat">${esc(rep.item_type)}</span>` : ''}
-            <span class="ic-rarity">${esc(highestRar)}</span>
+            <span class="ic-rarity">${esc(rarity)}</span>
           </div>
           ${metaParts.length ? `<div class="ic-meta">${metaParts.join(' · ')}</div>` : ''}
         </div>
       </a>`;
   }
 
-  // Initial render: alphabetical by base name
-  const groups = [...groupMap.values()].sort((a, b) => a.baseName.localeCompare(b.baseName));
+  // Initial render: rarity desc (Legendary first), then name A→Z within each rarity
+  const groups = [...groupMap.values()].sort((a, b) => {
+    const aRar = RARITY_RANK[pickRep(a.items).rarity] ?? 0;
+    const bRar = RARITY_RANK[pickRep(b.items).rarity] ?? 0;
+    if (bRar !== aRar) return bRar - aRar;
+    return a.baseName.localeCompare(b.baseName);
+  });
   const initialCards = groups.map(buildGroupCard).join('');
 
   container.innerHTML = `
